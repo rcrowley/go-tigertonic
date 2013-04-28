@@ -1,32 +1,43 @@
 package tigertonic
 
 import (
+	"github.com/rcrowley/go-metrics"
 	"net/http"
+	"time"
 )
 
 type Counter struct {
-	h http.Handler
+	metrics.Counter
+	handler http.Handler
 }
 
-func Counted(h http.Handler) *Counter {
-	return &Counter{h}
+func Counted(handler http.Handler) *Counter {
+	return &Counter{
+		Counter: metrics.NewCounter(),
+		handler: handler,
+	}
+	// TODO Register
 }
 
 func (c *Counter) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	c.h.ServeHTTP(w, r)
-	// TODO go-metrics
+	c.handler.ServeHTTP(w, r)
+	c.Inc(1)
 }
 
 type Timer struct {
-	h http.Handler
+	metrics.Timer
+	handler http.Handler
 }
 
-func Timed(h http.Handler) *Timer {
-	return &Timer{h}
+func Timed(handler http.Handler) *Timer {
+	return &Timer{
+		Timer:   metrics.NewTimer(),
+		handler: handler,
+	}
+	// TODO Register
 }
 
 func (t *Timer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	// TODO go-metrics
-	t.h.ServeHTTP(w, r)
-	// TODO go-metrics
+	defer t.UpdateSince(time.Now())
+	t.handler.ServeHTTP(w, r)
 }
