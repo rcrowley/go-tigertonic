@@ -78,7 +78,7 @@ func TestNotAcceptable(t *testing.T) {
 		return http.StatusNoContent, nil, nil, nil
 	}).ServeHTTP(w, r)
 	if http.StatusNotAcceptable != w.Status {
-		t.Fail()
+		t.Fatal(w.Status)
 	}
 }
 
@@ -90,7 +90,7 @@ func TestUnsupportedMediaType(t *testing.T) {
 		return http.StatusNoContent, nil, nil, nil
 	}).ServeHTTP(w, r)
 	if http.StatusUnsupportedMediaType != w.Status {
-		t.Fail()
+		t.Fatal(w.Status)
 	}
 }
 
@@ -103,7 +103,7 @@ func TestBadRequest(t *testing.T) {
 		return http.StatusNoContent, nil, nil, nil
 	}).ServeHTTP(w, r)
 	if http.StatusBadRequest != w.Status {
-		t.Fail()
+		t.Fatal(w.Status)
 	}
 }
 
@@ -115,10 +115,10 @@ func TestInternalServerError(t *testing.T) {
 		return 0, nil, nil, errors.New("foo")
 	}).ServeHTTP(w, r)
 	if http.StatusInternalServerError != w.Status {
-		t.Fail()
+		t.Fatal(w.Status)
 	}
 	if !bytes.Equal([]byte("foo\n"), w.Body.Bytes()) {
-		t.Fail()
+		t.Fatal(w.Body.Bytes())
 	}
 }
 
@@ -130,7 +130,7 @@ func TestNoContent(t *testing.T) {
 		return http.StatusNoContent, nil, nil, nil
 	}).ServeHTTP(w, r)
 	if http.StatusNoContent != w.Status {
-		t.Fail()
+		t.Fatal(w.Status)
 	}
 }
 
@@ -144,7 +144,7 @@ func TestHeader(t *testing.T) {
 		}, nil, nil
 	}).ServeHTTP(w, r)
 	if "bar" != w.Header().Get("Foo") {
-		t.Fail()
+		t.Fatal(w.Header().Get("Foo"))
 	}
 }
 
@@ -155,24 +155,16 @@ func TestBody(t *testing.T) {
 	r.Header.Set("Content-Type", "application/json")
 	Marshaled(func(u *url.URL, h http.Header, rq *testRequest) (int, http.Header, *testResponse, error) {
 		if "bar" != rq.Foo {
-			t.Fail()
+			t.Fatal(rq.Foo)
 		}
 		return http.StatusOK, nil, &testResponse{"bar"}, nil
 	}).ServeHTTP(w, r)
 	if !bytes.Equal([]byte("{\"foo\":\"bar\"}\n"), w.Body.Bytes()) {
-		t.Fail()
+		t.Fatal(w.Body.Bytes())
 	}
 }
 
-type testRequest struct {
-	Foo string `json:"foo"`
-}
-
-type testResponse struct {
-	Foo string `json:"foo"`
-}
-
-func testMarshaledPanic(f interface{}, t *testing.T) {
+func testMarshaledPanic(i interface{}, t *testing.T) {
 	defer func() {
 		err := recover()
 		if nil == err {
@@ -182,5 +174,13 @@ func testMarshaledPanic(f interface{}, t *testing.T) {
 			t.Error(err)
 		}
 	}()
-	Marshaled(f)
+	Marshaled(i)
+}
+
+type testRequest struct {
+	Foo string `json:"foo"`
+}
+
+type testResponse struct {
+	Foo string `json:"foo"`
 }

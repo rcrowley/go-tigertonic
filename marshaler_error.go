@@ -1,11 +1,5 @@
 package tigertonic
 
-type MarshalerError struct {
-	s string
-}
+type MarshalerError string
 
-func newMarshalerError(s string) error {
-	return MarshalerError{s}
-}
-
-func (e MarshalerError) Error() string { return e.s }
+func (e MarshalerError) Error() string { return string(e) }

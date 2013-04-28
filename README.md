@@ -3,7 +3,7 @@ Tiger Tonic
 
 A Go framework for building JSON web services.  Inspired by [Dropwizard](http://dropwizard.codahale.com).
 
-Like the Go language itself, Tiger Tonic strives to keep feature orthogonal.
+Like the Go language itself, Tiger Tonic strives to keep features orthogonal.
 
 `TrieServeMux`
 --------------
@@ -19,7 +19,7 @@ Wrap a function in `Marshaled` to turn it into an `http.Handler`.  The function 
 func myHandler(*url.URL, http.Header, *MyRequest) (int, http.Header, *MyResponse)
 ```
 
-Request bodies will be deserialized into a `MyRequest` struct and response bodies will be serialized from `MyResponse` structs.
+Request bodies will be unmarshaled into a `MyRequest` struct and response bodies will be marshaled from `MyResponse` structs.
 
 `Logged`
 --------
@@ -64,6 +64,7 @@ Wire it all up in `main`!
 
 ```go
 laddr, _ := net.ResolveTCPAddr("tcp", "0.0.0.0:8000")
+listener, _ := net.ListenTCP("tcp", laddr)
 mux := NewTrieServeMux()
 mux.Handle("GET", "/stuff", Marshaled(myHandler))
 server := &http.Server{
@@ -73,7 +74,7 @@ server := &http.Server{
     ReadTimeout:    1e9,
     WriteTimeout:   1e9,
 }
-server.Serve(laddr)
+server.Serve(listener)
 ```
 
 Ready for more?  See the full [example](https://github.com/rcrowley/go-tigertonic/tree/master/example).

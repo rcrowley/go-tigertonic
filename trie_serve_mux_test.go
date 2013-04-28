@@ -11,7 +11,7 @@ func TestNotFound(t *testing.T) {
 	r, _ := http.NewRequest("GET", "http://example.com/", nil)
 	mux.ServeHTTP(w, r)
 	if http.StatusNotFound != w.Status {
-		t.Fail()
+		t.Fatal(w.Status)
 	}
 }
 
@@ -22,7 +22,7 @@ func TestMethodNotAllowed(t *testing.T) {
 	r, _ := http.NewRequest("GET", "http://example.com/", nil)
 	mux.ServeHTTP(w, r)
 	if http.StatusMethodNotAllowed != w.Status {
-		t.Fail()
+		t.Fatal(w.Status)
 	}
 }
 
@@ -34,19 +34,19 @@ func TestOPTIONS(t *testing.T) {
 	r, _ := http.NewRequest("OPTIONS", "http://example.com/foo", nil)
 	mux.ServeHTTP(w, r)
 	if http.StatusOK != w.Status {
-		t.Fail()
+		t.Fatal(w.Status)
 	}
 	if "GET, HEAD, OPTIONS" != w.Header().Get("Allow") {
-		t.Fail()
+		t.Fatal(w.Header().Get("Allow"))
 	}
 	w = &testResponseWriter{}
 	r, _ = http.NewRequest("OPTIONS", "http://example.com/bar", nil)
 	mux.ServeHTTP(w, r)
 	if http.StatusOK != w.Status {
-		t.Fail()
+		t.Fatal(w.Status)
 	}
 	if "OPTIONS, POST" != w.Header().Get("Allow") {
-		t.Fail()
+		t.Fatal(w.Header().Get("Allow"))
 	}
 }
 
@@ -59,7 +59,7 @@ func TestRoot(t *testing.T) {
 	r, _ := http.NewRequest("GET", "http://example.com/", nil)
 	mux.ServeHTTP(w, r)
 	if http.StatusNoContent != w.Status {
-		t.Fail()
+		t.Fatal(w.Status)
 	}
 }
 
@@ -72,7 +72,7 @@ func TestRecurse(t *testing.T) {
 	r, _ := http.NewRequest("GET", "http://example.com/foo/bar/baz", nil)
 	mux.ServeHTTP(w, r)
 	if http.StatusNoContent != w.Status {
-		t.Fail()
+		t.Fatal(w.Status)
 	}
 }
 
@@ -81,13 +81,13 @@ func TestParams(t *testing.T) {
 	mux.HandleFunc("GET", "/{foo}/{bar}", func(w http.ResponseWriter, r *http.Request) {
 		q := r.URL.Query()
 		if "bar" != q.Get("foo") || "foo" != q.Get("bar") {
-			t.Fail()
+			t.Fatal(q.Get("foo"), q.Get("bar"))
 		}
 		if "bar" != q.Get("{foo}") || "foo" != q.Get("{bar}") {
-			t.Fail()
+			t.Fatal(q.Get("{foo}"), q.Get("{bar}"))
 		}
 		if "quux" != q.Get("baz") {
-			t.Fail()
+			t.Fatal(q.Get("quux"))
 		}
 		w.WriteHeader(http.StatusNoContent)
 	})
@@ -95,6 +95,6 @@ func TestParams(t *testing.T) {
 	r, _ := http.NewRequest("GET", "http://example.com/bar/foo?baz=quux", nil)
 	mux.ServeHTTP(w, r)
 	if http.StatusNoContent != w.Status {
-		t.Fail()
+		t.Fatal(w.Status)
 	}
 }
