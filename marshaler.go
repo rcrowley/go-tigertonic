@@ -79,6 +79,7 @@ func (m *Marshaler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			log.Println(w, err)
 			return
 		}
+		r.Body.Close()
 	}
 	out := m.v.Call([]reflect.Value{
 		reflect.ValueOf(r.URL),
