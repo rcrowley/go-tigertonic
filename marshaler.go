@@ -116,3 +116,11 @@ func (m *Marshaler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 }
+
+type MarshalerError string
+
+func (e MarshalerError) Error() string { return string(e) }
+
+type Request interface{}
+
+type Response interface{}
