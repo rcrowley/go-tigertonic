@@ -3,14 +3,36 @@ Tiger Tonic
 
 A Go framework for building JSON web services.  Inspired by [Dropwizard](http://dropwizard.codahale.com).
 
-Synopsis
---------
+Like the Go language itself, Tiger Tonic strives to keep feature orthogonal.
 
-Description
+`TrieServeMux`
+--------------
+
+HTTP routing in the Go standard library is pretty anemic.  Enter `TrieServeMux`.  It accepts an HTTP method, a URL pattern, and an `http.Handler` or an `http.HandlerFunc`.  Components in the URL pattern wrapped in `{` and `}` are wildcards: their values are added to the URL as <code>u.Query().Get("<em>name</em>")</code>.
+
+`Marshaled`
 -----------
 
-Examples
+Wrap a function in `Marshaled` to turn it into an `http.Handler`.  The function signature must be something like this or `Marshaled` will panic:
+
+```go
+func myHandler(*url.URL, http.Header, *MyRequest) (int, http.Header, *MyResponse)
+```
+
+Request bodies will be deserialized into a `MyRequest` struct and response bodies will be serialized from `MyResponse` structs.
+
+`Logged`
 --------
+
+Wrap an `http.Handler` in `Logged` to have the request and response headers and bodies logged to standard error.
+
+`Timed`
+-------
+
+Wrap an `http.Handler` in `Timed` to have the request timed with [`go-metrics`](https://github.com/rcrowley/go-metrics).
+
+Usage
+-----
 
 Requests that have bodies have types.  JSON is deserialized by adding `Marshaled` to your routes.
 
@@ -54,7 +76,7 @@ server := &http.Server{
 server.Serve(laddr)
 ```
 
-(Don't put this into production.  See the full [example](https://github.com/rcrowley/go-tigertonic/tree/master/example), for error handling.)
+Ready for more?  See the full [example](https://github.com/rcrowley/go-tigertonic/tree/master/example).
 
 WTF?
 ----
