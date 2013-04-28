@@ -1,6 +1,7 @@
 package tigertonic
 
 import (
+	"bytes"
 	"crypto/rand"
 	"fmt"
 	"io"
@@ -19,14 +20,14 @@ func Logged(handler http.Handler) *Logger {
 		Logger: log.New(
 			os.Stderr,
 			fmt.Sprintf("%s ", requestID()),
-			log.Ltime | log.Lmicroseconds,
+			log.Ltime|log.Lmicroseconds,
 		),
 		handler: handler,
 	}
 }
 
 func (l *Logger) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	l.Printf("> %s %s %s\n", r.Method, r.URL, r.Proto)
+	l.Printf("> %s %s %s\n", r.Method, r.URL.Path, r.Proto)
 	for name, values := range r.Header {
 		for _, value := range values {
 			l.Printf("> %s: %s\n", name, value)
@@ -35,12 +36,12 @@ func (l *Logger) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	l.Println(">")
 	r.Body = &readCloser{
 		ReadCloser: r.Body,
-		Logger: l.Logger,
+		Logger:     l.Logger,
 	}
 	l.handler.ServeHTTP(&responseWriter{
 		ResponseWriter: w,
-		Logger: l.Logger,
-		request: r,
+		Logger:         l.Logger,
+		request:        r,
 	}, r)
 }
 
@@ -58,7 +59,7 @@ func init() {
 	}
 	s := "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
 	for i := 0; i < 256; i++ {
-		encodingBase62[i] = s[uint8(float32(61) * float32(buf[i]) / float32(255))]
+		encodingBase62[i] = s[uint8(float32(61)*float32(buf[i])/float32(255))]
 	}
 }
 
@@ -70,7 +71,7 @@ type readCloser struct {
 func (r *readCloser) Read(buf []byte) (int, error) {
 	n, err := r.ReadCloser.Read(buf)
 	if 0 < n && nil == err {
-		r.Println(">", string(buf))
+		r.Println(">", string(buf[:bytes.IndexByte(buf, 0)]))
 	}
 	return n, err
 }
@@ -98,6 +99,9 @@ type responseWriter struct {
 }
 
 func (w *responseWriter) Write(buf []byte) (int, error) {
+	if '\n' == buf[len(buf)-1] {
+		buf = buf[:len(buf)-1]
+	}
 	w.Println("<", string(buf))
 	return w.ResponseWriter.Write(buf)
 }
