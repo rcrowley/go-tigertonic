@@ -20,11 +20,12 @@ func TestLogger(t *testing.T) {
 	logger.Logger = log.New(b, "", 0)
 	logger.ServeHTTP(w, r)
 	if `> POST /foo HTTP/1.1
-> Accept: application/json
 > Content-Type: application/json
+> Accept: application/json
 >
 > {"foo":"bar"}
 < HTTP/1.1 200 OK
+< Content-Type: application/json
 <
 < {"foo":"bar"}
 ` != b.String() {
