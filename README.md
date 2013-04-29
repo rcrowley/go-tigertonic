@@ -26,10 +26,10 @@ Request bodies will be unmarshaled into a `MyRequest` struct and response bodies
 
 Wrap an `http.Handler` in `Logged` to have the request and response headers and bodies logged to standard error.
 
-`Timed`
--------
+`Counted` and `Timed`
+---------------------
 
-Wrap an `http.Handler` in `Timed` to have the request timed with [`go-metrics`](https://github.com/rcrowley/go-metrics).
+Wrap an `http.Handler` in `Counted` or `Timed` to have the request counted or timed with [`go-metrics`](https://github.com/rcrowley/go-metrics).
 
 Usage
 -----
@@ -60,21 +60,12 @@ func myHandler(u *url.URL, h http.Header, *MyRequest) (int, http.Header, *MyResp
 }
 ```
 
-Wire it all up in `main`!
+Wire it all up in `main.main`!
 
 ```go
-laddr, _ := net.ResolveTCPAddr("tcp", "0.0.0.0:8000")
-listener, _ := net.ListenTCP("tcp", laddr)
 mux := NewTrieServeMux()
-mux.Handle("GET", "/stuff", Marshaled(myHandler))
-server := &http.Server{
-    Addr:           laddr.String(),
-    Handler:        Logged(Timed(mux)),
-    MaxHeaderBytes: 4096,
-    ReadTimeout:    1e9,
-    WriteTimeout:   1e9,
-}
-server.Serve(listener)
+mux.Handle("GET", "/stuff", tigertonic.Marshaled(tigertonic.Timed(myHandler, "myHandler", nil)))
+tigertonic.NewServer(":8000", mux).ListenAndServe()
 ```
 
 Ready for more?  See the full [example](https://github.com/rcrowley/go-tigertonic/tree/master/example).

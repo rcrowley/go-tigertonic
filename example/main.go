@@ -32,13 +32,7 @@ func main() {
 	mux.Handle("POST", "/stuff", tigertonic.Timed(tigertonic.Marshaled(create), "POST-stuff", nil))
 	mux.Handle("GET", "/stuff/{id}", tigertonic.Timed(tigertonic.Marshaled(get), "GET-stuff-id", nil))
 	mux.Handle("POST", "/stuff/{id}", tigertonic.Timed(tigertonic.Marshaled(update), "POST-stuff-id", nil))
-	server := &http.Server{
-		Addr:           *listen,
-		Handler:        tigertonic.Logged(mux),
-		MaxHeaderBytes: 4096,
-		ReadTimeout:    1e9,
-		WriteTimeout:   1e9,
-	}
+	server := tigertonic.NewServer(*listen, mux)
 	if "" != *cert && "" != *key {
 		server.ListenAndServeTLS(*cert, *key)
 	} else {
