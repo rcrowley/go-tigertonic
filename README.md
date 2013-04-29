@@ -1,9 +1,9 @@
 Tiger Tonic
 ===========
 
-A Go framework for building JSON web services.  Inspired by [Dropwizard](http://dropwizard.codahale.com).
+A Go framework for building JSON web services inspired by [Dropwizard](http://dropwizard.codahale.com).  If HTML is your game, this will hurt a little.
 
-Like the Go language itself, Tiger Tonic strives to keep features orthogonal.
+Like the Go language itself, Tiger Tonic strives to keep features orthogonal.  It defers what it can to the Go standard library and a few other packages.
 
 `TrieServeMux`
 --------------
@@ -33,6 +33,14 @@ Wrap an `http.Handler` in `Counted` or `Timed` to have the request counted or ti
 
 Usage
 -----
+
+Install dependencies:
+
+```sh
+sh bootstrap.sh
+```
+
+Then define your service.  The working [example](https://github.com/rcrowley/go-tigertonic/tree/master/example) may be a more convenient place to start.
 
 Requests that have bodies have types.  JSON is deserialized by adding `Marshaled` to your routes.
 
