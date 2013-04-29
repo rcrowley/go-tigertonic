@@ -5,15 +5,15 @@ A Go framework for building JSON web services inspired by [Dropwizard](http://dr
 
 Like the Go language itself, Tiger Tonic strives to keep features orthogonal.  It defers what it can to the Go standard library and a few other packages.
 
-`TrieServeMux`
---------------
+`tigertonic.TrieServeMux`
+-------------------------
 
-HTTP routing in the Go standard library is pretty anemic.  Enter `TrieServeMux`.  It accepts an HTTP method, a URL pattern, and an `http.Handler` or an `http.HandlerFunc`.  Components in the URL pattern wrapped in `{` and `}` are wildcards: their values are added to the URL as <code>u.Query().Get("<em>name</em>")</code>.
+HTTP routing in the Go standard library is pretty anemic.  Enter `tigertonic.TrieServeMux`.  It accepts an HTTP method, a URL pattern, and an `http.Handler` or an `http.HandlerFunc`.  Components in the URL pattern wrapped in `{` and `}` are wildcards: their values are added to the URL as <code>u.Query().Get("<em>name</em>")</code>.
 
-`Marshaled`
------------
+`tigertonic.Marshaled`
+----------------------
 
-Wrap a function in `Marshaled` to turn it into an `http.Handler`.  The function signature must be something like this or `Marshaled` will panic:
+Wrap a function in `tigertonic.Marshaled` to turn it into an `http.Handler`.  The function signature must be something like this or `tigertonic.Marshaled` will panic:
 
 ```go
 func myHandler(*url.URL, http.Header, *MyRequest) (int, http.Header, *MyResponse)
@@ -21,13 +21,13 @@ func myHandler(*url.URL, http.Header, *MyRequest) (int, http.Header, *MyResponse
 
 Request bodies will be unmarshaled into a `MyRequest` struct and response bodies will be marshaled from `MyResponse` structs.
 
-`Logged`
---------
+`tigertonic.Logged`
+-------------------
 
-Wrap an `http.Handler` in `Logged` to have the request and response headers and bodies logged to standard error.
+Wrap an `http.Handler` in `tigertonic.Logged` to have the request and response headers and bodies logged to standard error.  This happens by default if you use `tigertonic.Server` instead of `http.Server`.
 
-`Counted` and `Timed`
----------------------
+`tigertonic.Counted` and `tigertonic.Timed`
+-------------------------------------------
 
 Wrap an `http.Handler` in `Counted` or `Timed` to have the request counted or timed with [`go-metrics`](https://github.com/rcrowley/go-metrics).
 
@@ -42,7 +42,7 @@ sh bootstrap.sh
 
 Then define your service.  The working [example](https://github.com/rcrowley/go-tigertonic/tree/master/example) may be a more convenient place to start.
 
-Requests that have bodies have types.  JSON is deserialized by adding `Marshaled` to your routes.
+Requests that have bodies have types.  JSON is deserialized by adding `tigertonic.Marshaled` to your routes.
 
 ```go
 type MyRequest struct {
@@ -51,7 +51,7 @@ type MyRequest struct {
 }
 ```
 
-Responses, too, have types.  JSON is serialized by adding `Marshaled` to your routes.
+Responses, too, have types.  JSON is serialized by adding `tigertonic.Marshaled` to your routes.
 
 ```go
 type MyResponse struct {
@@ -81,4 +81,4 @@ Ready for more?  See the full [example](https://github.com/rcrowley/go-tigertoni
 WTF?
 ----
 
-Dropwizard was named by <http://gunshowcomic.com/316> so Tiger Tonic was named by <http://gunshowcomic.com/338>.
+Dropwizard was named after <http://gunshowcomic.com/316> so Tiger Tonic was named after <http://gunshowcomic.com/338>.
