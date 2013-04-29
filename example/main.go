@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"github.com/rcrowley/go-metrics"
 	"github.com/rcrowley/go-tigertonic"
 	"log"
 	"net/http"
@@ -26,13 +27,14 @@ func init() {
 
 func main() {
 	flag.Parse()
+	go metrics.Log(metrics.DefaultRegistry, 60, log.New(os.Stderr, "metrics ", log.Lmicroseconds))
 	mux := tigertonic.NewTrieServeMux()
-	mux.Handle("POST", "/stuff", tigertonic.Marshaled(create))
-	mux.Handle("GET", "/stuff/{id}", tigertonic.Marshaled(get))
-	mux.Handle("POST", "/stuff/{id}", tigertonic.Marshaled(update))
+	mux.Handle("POST", "/stuff", tigertonic.Timed(tigertonic.Marshaled(create), "POST-stuff", nil))
+	mux.Handle("GET", "/stuff/{id}", tigertonic.Timed(tigertonic.Marshaled(get), "GET-stuff-id", nil))
+	mux.Handle("POST", "/stuff/{id}", tigertonic.Timed(tigertonic.Marshaled(update), "POST-stuff-id", nil))
 	server := &http.Server{
 		Addr:           *listen,
-		Handler:        tigertonic.Logged(tigertonic.Timed(mux)),
+		Handler:        tigertonic.Logged(mux),
 		MaxHeaderBytes: 4096,
 		ReadTimeout:    1e9,
 		WriteTimeout:   1e9,

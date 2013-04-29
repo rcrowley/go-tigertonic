@@ -11,12 +11,16 @@ type Counter struct {
 	handler http.Handler
 }
 
-func Counted(handler http.Handler) *Counter {
-	return &Counter{
+func Counted(handler http.Handler, name string, registry metrics.Registry) *Counter {
+	counter := &Counter{
 		Counter: metrics.NewCounter(),
 		handler: handler,
 	}
-	// TODO Register
+	if nil == registry {
+		registry = metrics.DefaultRegistry
+	}
+	registry.Register(name, counter)
+	return counter
 }
 
 func (c *Counter) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -29,12 +33,16 @@ type Timer struct {
 	handler http.Handler
 }
 
-func Timed(handler http.Handler) *Timer {
-	return &Timer{
+func Timed(handler http.Handler, name string, registry metrics.Registry) *Timer {
+	timer := &Timer{
 		Timer:   metrics.NewTimer(),
 		handler: handler,
 	}
-	// TODO Register
+	if nil == registry {
+		registry = metrics.DefaultRegistry
+	}
+	registry.Register(name, timer)
+	return timer
 }
 
 func (t *Timer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
