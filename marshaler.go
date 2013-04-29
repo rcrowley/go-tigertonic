@@ -3,6 +3,7 @@ package tigertonic
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"reflect"
@@ -60,23 +61,25 @@ func Marshaled(i interface{}) *Marshaler {
 // ServeHTTP unmarshals JSON input, handles the request via the function, and
 // marshals JSON output.
 func (m *Marshaler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	wHeader := w.Header()
+	w.Header().Set("Content-Type", "application/json")
 	if !strings.Contains(r.Header.Get("Accept"), "application/json") {
 		w.WriteHeader(http.StatusNotAcceptable)
+		writeJSONError(w, MarshalerError(fmt.Sprintf("Accept header is %s, not application/json", r.Header.Get("Accept"))))
 		return
 	}
 	rq := reflect.New(m.v.Type().In(2).Elem())
 	if "POST" == r.Method || "PUT" == r.Method {
 		if !strings.HasPrefix(r.Header.Get("Content-Type"), "application/json") {
 			w.WriteHeader(http.StatusUnsupportedMediaType)
+			writeJSONError(w, MarshalerError(fmt.Sprintf("Content-Type header is %s, not application/json", r.Header.Get("Content-Type"))))
 			return
 		}
 		decoder := reflect.ValueOf(json.NewDecoder(r.Body))
 		out := decoder.MethodByName("Decode").Call([]reflect.Value{rq})
 		if !out[0].IsNil() {
-			err := out[0].Interface().(error)
 			w.WriteHeader(http.StatusBadRequest)
-			fmt.Fprintln(w, err) // TODO JSON
-			log.Println(w, err)
+			writeJSONError(w, out[0].Interface().(error))
 			return
 		}
 		r.Body.Close()
@@ -95,13 +98,10 @@ func (m *Marshaler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		} else {
 			w.WriteHeader(status)
 		}
-		err := out[3].Interface().(error)
-		fmt.Fprintln(w, err) // TODO JSON
-		log.Println(w, err)
+		writeJSONError(w, out[3].Interface().(error))
 		return
 	}
 	if nil != header {
-		wHeader := w.Header()
 		for key, values := range header {
 			wHeader.Del(key)
 			for _, value := range values {
@@ -110,9 +110,8 @@ func (m *Marshaler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	w.WriteHeader(status)
-	if nil != rs {
-		err := json.NewEncoder(w).Encode(rs)
-		if nil != err {
+	if nil != rs && 204 != status {
+		if err := json.NewEncoder(w).Encode(rs); nil != err {
 			log.Println(err)
 		}
 	}
@@ -125,3 +124,20 @@ func (e MarshalerError) Error() string { return string(e) }
 type Request interface{}
 
 type Response interface{}
+
+func writeJSONError(w io.Writer, err error) {
+	t := reflect.TypeOf(err)
+	if reflect.Ptr == t.Kind() {
+		t = t.Elem()
+	}
+	name := t.Name()
+	if "" == name || "errorString" == name {
+		name = "error"
+	}
+	if err := json.NewEncoder(w).Encode(map[string]string{
+		"description": err.Error(),
+		"error": name,
+	}); nil != err {
+		log.Println(err)
+	}
+}

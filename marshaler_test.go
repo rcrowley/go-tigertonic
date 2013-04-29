@@ -61,13 +61,13 @@ func TestMarshaledPanicOut1(t *testing.T) {
 
 func TestMarshaledPanicOut2(t *testing.T) {
 	testMarshaledPanic(func(u *url.URL, h http.Header, rq *testRequest) (int, http.Header, int, int) {
-		return 0, map[string][]string{}, 0, 0
+		return 0, http.Header{}, 0, 0
 	}, t)
 }
 
 func TestMarshaledPanicOut3(t *testing.T) {
 	testMarshaledPanic(func(u *url.URL, h http.Header, rq *testRequest) (int, http.Header, *testResponse, int) {
-		return 0, map[string][]string{}, nil, 0
+		return 0, http.Header{}, nil, 0
 	}, t)
 }
 
@@ -105,6 +105,25 @@ func TestBadRequest(t *testing.T) {
 	if http.StatusBadRequest != w.Status {
 		t.Fatal(w.Status)
 	}
+	if "{\"description\":\"EOF\",\"error\":\"error\"}\n" != w.Body.String() {
+		t.Fatal(w.Body.String())
+	}
+}
+
+func TestBadRequestSyntaxError(t *testing.T) {
+	w := &testResponseWriter{}
+	r, _ := http.NewRequest("POST", "http://example.com/foo", bytes.NewBufferString("}"))
+	r.Header.Set("Accept", "application/json")
+	r.Header.Set("Content-Type", "application/json")
+	Marshaled(func(u *url.URL, h http.Header, rq *testRequest) (int, http.Header, *testResponse, error) {
+		return http.StatusNoContent, nil, nil, nil
+	}).ServeHTTP(w, r)
+	if http.StatusBadRequest != w.Status {
+		t.Fatal(w.Status)
+	}
+	if "{\"description\":\"invalid character '}' looking for beginning of value\",\"error\":\"SyntaxError\"}\n" != w.Body.String() {
+		t.Fatal(w.Body.String())
+	}
 }
 
 func TestInternalServerError(t *testing.T) {
@@ -117,8 +136,8 @@ func TestInternalServerError(t *testing.T) {
 	if http.StatusInternalServerError != w.Status {
 		t.Fatal(w.Status)
 	}
-	if !bytes.Equal([]byte("foo\n"), w.Body.Bytes()) {
-		t.Fatal(w.Body.Bytes())
+	if "{\"description\":\"foo\",\"error\":\"error\"}\n" != w.Body.String() {
+		t.Fatal(w.Body.String())
 	}
 }
 
@@ -159,8 +178,8 @@ func TestBody(t *testing.T) {
 		}
 		return http.StatusOK, nil, &testResponse{"bar"}, nil
 	}).ServeHTTP(w, r)
-	if !bytes.Equal([]byte("{\"foo\":\"bar\"}\n"), w.Body.Bytes()) {
-		t.Fatal(w.Body.Bytes())
+	if "{\"foo\":\"bar\"}\n" != w.Body.String() {
+		t.Fatal(w.Body.String())
 	}
 }
 
