@@ -19,7 +19,7 @@ var (
 
 func init() {
 	flag.Usage = func() {
-		fmt.Fprintln(os.Stderr, "Usage: example [-listen=<listen>]")
+		fmt.Fprintln(os.Stderr, "Usage: example [-cert=<cert>] [-key=<key>] [-listen=<listen>]")
 		flag.PrintDefaults()
 	}
 	log.SetFlags(log.Ltime | log.Lmicroseconds | log.Lshortfile)
