@@ -8,6 +8,8 @@ import (
 	"net/http"
 	"reflect"
 	"strings"
+	"unicode"
+	"unicode/utf8"
 )
 
 // Marshaler is an http.Handler that unmarshals JSON input, handles the request
@@ -130,13 +132,13 @@ func writeJSONError(w io.Writer, err error) {
 	if reflect.Ptr == t.Kind() {
 		t = t.Elem()
 	}
-	name := t.Name()
-	if "" == name || "errorString" == name {
-		name = "error"
+	s := t.String()
+	if r, _ := utf8.DecodeRuneInString(t.Name()); unicode.IsLower(r) {
+		s = "error"
 	}
 	if err := json.NewEncoder(w).Encode(map[string]string{
 		"description": err.Error(),
-		"error": name,
+		"error": s,
 	}); nil != err {
 		log.Println(err)
 	}

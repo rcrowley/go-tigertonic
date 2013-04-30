@@ -121,7 +121,7 @@ func TestBadRequestSyntaxError(t *testing.T) {
 	if http.StatusBadRequest != w.Status {
 		t.Fatal(w.Status)
 	}
-	if "{\"description\":\"invalid character '}' looking for beginning of value\",\"error\":\"SyntaxError\"}\n" != w.Body.String() {
+	if "{\"description\":\"invalid character '}' looking for beginning of value\",\"error\":\"json.SyntaxError\"}\n" != w.Body.String() {
 		t.Fatal(w.Body.String())
 	}
 }
