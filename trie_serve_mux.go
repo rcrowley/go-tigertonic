@@ -47,13 +47,6 @@ func (mux *TrieServeMux) HandleFunc(method, pattern string, handler func(http.Re
 // pattern which matches the requested path.  It responds 404 if there is no
 // matching URL pattern and 405 if the requested HTTP method is not allowed.
 func (mux *TrieServeMux) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	// r.Header.Set("Host", r.Host)
-	r.URL.Host = r.Host
-	if nil != r.TLS {
-		r.URL.Scheme = "https"
-	} else {
-		r.URL.Scheme = "http"
-	}
 	params, handler := mux.findRoute(
 		r.Method,
 		strings.Split(r.URL.Path, "/")[1:],
