@@ -183,6 +183,19 @@ func TestBody(t *testing.T) {
 	}
 }
 
+func Test500OnMisconfiguredPost(t *testing.T) {
+	w := &testResponseWriter{}
+	r, _ := http.NewRequest("POST", "http://example.com/foo", bytes.NewBufferString("anything"))
+	r.Header.Set("Accept", "application/json")
+	r.Header.Set("Content-Type", "application/json")
+	Marshaled(func(u *url.URL, h http.Header, _ interface{}) (int, http.Header, *testResponse, error) {
+		return http.StatusOK, nil, &testResponse{"bar"}, nil
+	}).ServeHTTP(w, r)
+	if http.StatusInternalServerError != w.Status {
+		t.Fatalf("Server did not 500 when trying to handle a POST to a handler with interface{} as the request type")
+	}
+}
+
 func testMarshaledPanic(i interface{}, t *testing.T) {
 	defer func() {
 		err := recover()

@@ -58,6 +58,8 @@ func Marshaled(i interface{}) *Marshaler {
 	return &Marshaler{reflect.ValueOf(i)}
 }
 
+var emptyBodySentinel = reflect.ValueOf((*Request)(nil))
+
 // ServeHTTP unmarshals JSON input, handles the request via the function, and
 // marshals JSON output.
 func (m *Marshaler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -68,8 +70,21 @@ func (m *Marshaler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		writeJSONError(w, MarshalerError(fmt.Sprintf("Accept header is %s, not application/json", r.Header.Get("Accept"))))
 		return
 	}
-	rq := reflect.New(m.v.Type().In(2).Elem())
-	if "POST" == r.Method || "PUT" == r.Method {
+
+	var rq reflect.Value
+	if m.v.Type().In(2).Kind() == reflect.Interface && m.v.Type().In(2).NumMethod() == 0 {
+		rq = emptyBodySentinel
+	} else {
+		rq = reflect.New(m.v.Type().In(2).Elem())
+	}
+
+	if "POST" == r.Method || "PUT" == r.Method || "PATCH" == r.Method {
+		if rq == emptyBodySentinel {
+			log.Printf("Handler for request method that required a body registered with empty interface input argument")
+			w.WriteHeader(http.StatusInternalServerError)
+			writeJSONError(w, MarshalerError("Internal Server Error"))
+			return
+		}
 		if !strings.HasPrefix(r.Header.Get("Content-Type"), "application/json") {
 			w.WriteHeader(http.StatusUnsupportedMediaType)
 			writeJSONError(w, MarshalerError(fmt.Sprintf("Content-Type header is %s, not application/json", r.Header.Get("Content-Type"))))
@@ -83,6 +98,11 @@ func (m *Marshaler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		r.Body.Close()
+	} else {
+		// only the above request types should have bodies
+		if rq != emptyBodySentinel {
+			log.Printf("It appears that you are using a request type that isn't an empty interface{} with an HTTP method that does not traditionally allow bodies. The body will be ignored.")
+		}
 	}
 	out := m.v.Call([]reflect.Value{
 		reflect.ValueOf(r.URL),
@@ -136,7 +156,7 @@ func writeJSONError(w io.Writer, err error) {
 	}
 	if err := json.NewEncoder(w).Encode(map[string]string{
 		"description": err.Error(),
-		"error": name,
+		"error":       name,
 	}); nil != err {
 		log.Println(err)
 	}
