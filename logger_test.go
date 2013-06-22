@@ -2,6 +2,7 @@ package tigertonic
 
 import (
 	"bytes"
+	"fmt"
 	"log"
 	"net/http"
 	"net/url"
@@ -19,16 +20,28 @@ func TestLogger(t *testing.T) {
 	b := &bytes.Buffer{}
 	logger.Logger = log.New(b, "", 0)
 	logger.ServeHTTP(w, r)
-	if `> POST /foo HTTP/1.1
-> Accept: application/json
-> Content-Type: application/json
->
-> {"foo":"bar"}
-< HTTP/1.1 200 OK
-< Content-Type: application/json
-<
-< {"foo":"bar"}
-` != b.String() {
+	requestID := b.String()[:16]
+	if fmt.Sprintf(
+		`%s > POST /foo HTTP/1.1
+%s > Accept: application/json
+%s > Content-Type: application/json
+%s >
+%s > {"foo":"bar"}
+%s < HTTP/1.1 200 OK
+%s < Content-Type: application/json
+%s <
+%s < {"foo":"bar"}
+`,
+		requestID,
+		requestID,
+		requestID,
+		requestID,
+		requestID,
+		requestID,
+		requestID,
+		requestID,
+		requestID,
+	) != b.String() {
 		t.Fatal(b.String())
 	}
 }
