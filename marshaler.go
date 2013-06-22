@@ -60,6 +60,8 @@ func Marshaled(i interface{}) *Marshaler {
 	return &Marshaler{reflect.ValueOf(i)}
 }
 
+var emptyBodySentinel = reflect.ValueOf((*Request)(nil))
+
 // ServeHTTP unmarshals JSON input, handles the request via the function, and
 // marshals JSON output.
 func (m *Marshaler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -70,8 +72,18 @@ func (m *Marshaler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		writeJSONError(w, MarshalerError(fmt.Sprintf("Accept header is %s, not application/json", r.Header.Get("Accept"))))
 		return
 	}
-	rq := reflect.New(m.v.Type().In(2).Elem())
-	if "POST" == r.Method || "PUT" == r.Method {
+	var rq reflect.Value
+	if reflect.Interface == m.v.Type().In(2).Kind() && 0 == m.v.Type().In(2).NumMethod() {
+		rq = emptyBodySentinel
+	} else {
+		rq = reflect.New(m.v.Type().In(2).Elem())
+	}
+	if "PATCH" == r.Method || "POST" == r.Method || "PUT" == r.Method {
+		if rq == emptyBodySentinel {
+			w.WriteHeader(http.StatusInternalServerError)
+			writeJSONError(w, MarshalerError(fmt.Sprintf("empty interface is not suitable for %s request bodies", r.Method)))
+			return
+		}
 		if !strings.HasPrefix(r.Header.Get("Content-Type"), "application/json") {
 			w.WriteHeader(http.StatusUnsupportedMediaType)
 			writeJSONError(w, MarshalerError(fmt.Sprintf("Content-Type header is %s, not application/json", r.Header.Get("Content-Type"))))
@@ -85,6 +97,8 @@ func (m *Marshaler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		r.Body.Close()
+	} else if emptyBodySentinel != rq {
+		log.Printf("%s request body isn't an empty interface; this is weird and is being ignored\n", r.Method)
 	}
 	out := m.v.Call([]reflect.Value{
 		reflect.ValueOf(r.URL),
@@ -138,7 +152,7 @@ func writeJSONError(w io.Writer, err error) {
 	}
 	if err := json.NewEncoder(w).Encode(map[string]string{
 		"description": err.Error(),
-		"error": s,
+		"error":       s,
 	}); nil != err {
 		log.Println(err)
 	}
