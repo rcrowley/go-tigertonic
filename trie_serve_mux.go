@@ -1,6 +1,8 @@
 package tigertonic
 
 import (
+	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"net/url"
@@ -113,8 +115,37 @@ func (h methodNotAllowedHandler) ServeHTTP(w http.ResponseWriter, r *http.Reques
 	sort.Strings(methods)
 	w.Header().Set("Allow", strings.Join(methods, ", "))
 	if "OPTIONS" == r.Method {
-		w.WriteHeader(http.StatusOK)
+		if acceptJSON(r) {
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusOK)
+			if err := json.NewEncoder(w).Encode(map[string][]string{
+				"allow": methods,
+			}); nil != err {
+				log.Println(err)
+			}
+		} else {
+			w.Header().Set("Content-Type", "text/plain")
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, strings.Join(methods, ", "))
+		}
 	} else {
-		w.WriteHeader(http.StatusMethodNotAllowed)
+		description := fmt.Sprintf(
+			"only %s are allowed",
+			strings.Join(methods, ", "),
+		)
+		if acceptJSON(r) {
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusMethodNotAllowed)
+			if err := json.NewEncoder(w).Encode(map[string]string{
+				"description": description,
+				"error":       "MethodNotAllowed",
+			}); nil != err {
+				log.Println(err)
+			}
+		} else {
+			w.Header().Set("Content-Type", "text/plain")
+			w.WriteHeader(http.StatusMethodNotAllowed)
+			fmt.Fprint(w, description)
+		}
 	}
 }
