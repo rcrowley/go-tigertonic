@@ -85,12 +85,17 @@ func Marshaled(i interface{}) *Marshaler {
 // marshals JSON output.
 func (m *Marshaler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	wHeader := w.Header()
-	w.Header().Set("Content-Type", "application/json")
 	if !strings.Contains(r.Header.Get("Accept"), "application/json") {
+		w.Header().Set("Content-Type", "text/plain")
 		w.WriteHeader(http.StatusNotAcceptable)
-		writeJSONError(w, MarshalerError(fmt.Sprintf("Accept header is %s, not application/json", r.Header.Get("Accept"))))
+		fmt.Fprintf(
+			w,
+			"\"%s\" does not contain \"application/json\"",
+			r.Header.Get("Accept"),
+		)
 		return
 	}
+	w.Header().Set("Content-Type", "application/json")
 	var rq reflect.Value
 	in2 := m.v.Type().In(2)
 	if reflect.Interface == in2.Kind() && 0 == in2.NumMethod() {
@@ -107,7 +112,10 @@ func (m *Marshaler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			))
 			return
 		}
-		if !strings.HasPrefix(r.Header.Get("Content-Type"), "application/json") {
+		if !strings.HasPrefix(
+			r.Header.Get("Content-Type"),
+			"application/json",
+		) {
 			w.WriteHeader(http.StatusUnsupportedMediaType)
 			writeJSONError(w, NewMarshalerError(
 				"Content-Type header is %s, not application/json",
