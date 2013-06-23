@@ -18,8 +18,8 @@ func (w *testResponseWriter) Header() http.Header {
 	return w.header
 }
 
-func (w *testResponseWriter) Write(body []byte) (int, error) {
-	return w.Body.Write(body)
+func (w *testResponseWriter) Write(p []byte) (int, error) {
+	return w.Body.Write(p)
 }
 
 func (w *testResponseWriter) WriteHeader(status int) {
