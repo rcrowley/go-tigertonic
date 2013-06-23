@@ -86,7 +86,7 @@ func Marshaled(i interface{}) *Marshaler {
 func (m *Marshaler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	wHeader := w.Header()
 	if !strings.Contains(r.Header.Get("Accept"), "application/json") {
-		w.Header().Set("Content-Type", "text/plain")
+		wHeader.Set("Content-Type", "text/plain")
 		w.WriteHeader(http.StatusNotAcceptable)
 		fmt.Fprintf(
 			w,
@@ -95,7 +95,7 @@ func (m *Marshaler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		)
 		return
 	}
-	w.Header().Set("Content-Type", "application/json")
+	wHeader.Set("Content-Type", "application/json")
 	var rq reflect.Value
 	in2 := m.v.Type().In(2)
 	if reflect.Interface == in2.Kind() && 0 == in2.NumMethod() {
