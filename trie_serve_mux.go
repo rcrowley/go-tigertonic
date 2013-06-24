@@ -10,6 +10,26 @@ import (
 	"strings"
 )
 
+func NotFound(w http.ResponseWriter, r *http.Request) {
+	description := fmt.Sprintf("%s %s not found", r.Method, r.URL.Path)
+	if acceptJSON(r) {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusNotFound)
+		if err := json.NewEncoder(w).Encode(map[string]string{
+			"description": description,
+			"error":       "NotFound",
+		}); nil != err {
+			log.Println(err)
+		}
+	} else {
+		w.Header().Set("Content-Type", "text/plain")
+		w.WriteHeader(http.StatusNotFound)
+		fmt.Fprint(w, description)
+	}
+}
+
+func NotFoundHandler() http.Handler { return http.HandlerFunc(NotFound) }
+
 // TrieServeMux is an HTTP request multiplexer that implements http.Handler
 // with an API similar to http.ServeMux.  It is expanded to be sensitive to the
 // HTTP method and treats URL patterns as patterns rather than simply prefixes.
@@ -97,7 +117,7 @@ func (mux *TrieServeMux) findRoute(method string, paths []string) (url.Values, h
 		params.Set(strings.Trim(*mux.param, "{}"), paths[0])
 		return params, handler
 	}
-	return nil, http.NotFoundHandler()
+	return nil, NotFoundHandler()
 }
 
 type methodNotAllowedHandler struct {
