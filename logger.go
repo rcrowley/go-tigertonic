@@ -1,7 +1,6 @@
 package tigertonic
 
 import (
-	"bytes"
 	"crypto/rand"
 	"fmt"
 	"io"
@@ -108,7 +107,7 @@ type readCloser struct {
 func (r *readCloser) Read(p []byte) (int, error) {
 	n, err := r.ReadCloser.Read(p)
 	if 0 < n && nil == err {
-		r.Println(r.requestID, ">", string(p[:bytes.IndexByte(p, 0)]))
+		r.Println(r.requestID, ">", string(p[:n]))
 	}
 	return n, err
 }
