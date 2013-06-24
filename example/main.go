@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"strings"
 )
 
 var (
@@ -32,7 +33,9 @@ func main() {
 	mux.Handle("POST", "/stuff", tigertonic.Timed(tigertonic.Marshaled(create), "POST-stuff", nil))
 	mux.Handle("GET", "/stuff/{id}", tigertonic.Timed(tigertonic.Marshaled(get), "GET-stuff-id", nil))
 	mux.Handle("POST", "/stuff/{id}", tigertonic.Timed(tigertonic.Marshaled(update), "POST-stuff-id", nil))
-	server := tigertonic.NewServer(*listen, mux)
+	server := tigertonic.NewServer(*listen, Logged(mux, func(s string) string {
+		return strings.Replace(s, "SECRET", "REDACTED", -1)
+	}))
 	if "" != *cert && "" != *key {
 		server.ListenAndServeTLS(*cert, *key)
 	} else {

@@ -73,7 +73,7 @@ Wire it all up in `main.main`!
 ```go
 mux := NewTrieServeMux()
 mux.Handle("GET", "/stuff", tigertonic.Marshaled(tigertonic.Timed(myHandler, "myHandler", nil)))
-tigertonic.NewServer(":8000", mux).ListenAndServe()
+tigertonic.NewServer(":8000", tigertonic.Logged(mux, nil)).ListenAndServe()
 ```
 
 Ready for more?  See the full [example](https://github.com/rcrowley/go-tigertonic/tree/master/example).

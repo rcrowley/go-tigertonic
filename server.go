@@ -11,7 +11,7 @@ type Server struct {
 func NewServer(addr string, handler http.Handler) *Server {
 	return &Server{http.Server{
 		Addr:           addr,
-		Handler:        &server{Logged(handler)},
+		Handler:        &server{handler},
 		MaxHeaderBytes: 4096,
 		ReadTimeout:    1e9,
 		WriteTimeout:   1e9,

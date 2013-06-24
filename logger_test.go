@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"strings"
 	"testing"
 )
 
@@ -16,11 +17,12 @@ func TestLogger(t *testing.T) {
 	r.Header.Set("Content-Type", "application/json")
 	logger := Logged(Marshaled(func(u *url.URL, h http.Header, rq *testRequest) (int, http.Header, *testResponse, error) {
 		return http.StatusOK, nil, &testResponse{"bar"}, nil
-	}))
+	}), nil)
 	b := &bytes.Buffer{}
 	logger.Logger = log.New(b, "", 0)
 	logger.ServeHTTP(w, r)
-	requestID := b.String()[:16]
+	s := b.String()
+	requestID := s[:16]
 	if fmt.Sprintf(
 		`%s > POST /foo HTTP/1.1
 %s > Accept: application/json
@@ -41,7 +43,28 @@ func TestLogger(t *testing.T) {
 		requestID,
 		requestID,
 		requestID,
-	) != b.String() {
-		t.Fatal(b.String())
+	) != s {
+		t.Fatal(s)
+	}
+}
+
+func TestRedactor(t *testing.T) {
+	w := &testResponseWriter{}
+	r, _ := http.NewRequest("GET", "http://example.com/foo", nil)
+	r.Header.Set("Accept", "application/json")
+	logger := Logged(Marshaled(func(u *url.URL, h http.Header, rq *testRequest) (int, http.Header, *testResponse, error) {
+		return http.StatusOK, nil, &testResponse{"SECRET"}, nil
+	}), func(s string) string {
+		return strings.Replace(s, "SECRET", "REDACTED", -1)
+	})
+	b := &bytes.Buffer{}
+	logger.Logger = log.New(b, "", 0)
+	logger.ServeHTTP(w, r)
+	s := b.String()
+	if strings.Contains(s, "SECRET") {
+		t.Fatal(s)
+	}
+	if !strings.Contains(s, "REDACTED") {
+		t.Fatal(s)
 	}
 }

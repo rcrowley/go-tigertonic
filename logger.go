@@ -3,6 +3,7 @@ package tigertonic
 import (
 	"bytes"
 	"crypto/rand"
+	"fmt"
 	"io"
 	"log"
 	"net/http"
@@ -12,14 +13,31 @@ import (
 type Logger struct {
 	*log.Logger
 	handler http.Handler
+	redactor Redactor
 }
 
-func Logged(handler http.Handler) *Logger {
+func Logged(handler http.Handler, redactor Redactor) *Logger {
 	return &Logger{
 		Logger:  log.New(os.Stderr, "", log.Ltime|log.Lmicroseconds),
 		handler: handler,
+		redactor: redactor,
 	}
 }
+
+func (l *Logger) Output(calldepth int, s string) error {
+	if nil != l.redactor {
+		s = l.redactor(s)
+	}
+	return l.Logger.Output(calldepth, s)
+}
+
+func (l *Logger) Print(v ...interface{}) { l.Output(2, fmt.Sprint(v...)) }
+
+func (l *Logger) Printf(format string, v ...interface{}) {
+	l.Output(2, fmt.Sprintf(format, v...))
+}
+
+func (l *Logger) Println(v ...interface{}) { l.Output(2, fmt.Sprintln(v...)) }
 
 func (l *Logger) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	requestID := NewRequestID()
@@ -32,16 +50,18 @@ func (l *Logger) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	l.Println(requestID, ">")
 	r.Body = &readCloser{
 		ReadCloser: r.Body,
-		Logger:     l.Logger,
+		Logger:     l,
 		requestID:  requestID,
 	}
 	l.handler.ServeHTTP(&responseWriter{
 		ResponseWriter: w,
-		Logger:         l.Logger,
+		Logger:         l,
 		request:        r,
 		requestID:      requestID,
 	}, r)
 }
+
+type Redactor func(string) string
 
 type RequestID string
 
@@ -81,31 +101,31 @@ func init() {
 
 type readCloser struct {
 	io.ReadCloser
-	*log.Logger
+	*Logger
 	requestID RequestID
 }
 
-func (r *readCloser) Read(buf []byte) (int, error) {
-	n, err := r.ReadCloser.Read(buf)
+func (r *readCloser) Read(p []byte) (int, error) {
+	n, err := r.ReadCloser.Read(p)
 	if 0 < n && nil == err {
-		r.Println(r.requestID, ">", string(buf[:bytes.IndexByte(buf, 0)]))
+		r.Println(r.requestID, ">", string(p[:bytes.IndexByte(p, 0)]))
 	}
 	return n, err
 }
 
 type responseWriter struct {
 	http.ResponseWriter
-	*log.Logger
+	*Logger
 	request   *http.Request
 	requestID RequestID
 }
 
-func (w *responseWriter) Write(buf []byte) (int, error) {
-	if '\n' == buf[len(buf)-1] {
-		buf = buf[:len(buf)-1]
+func (w *responseWriter) Write(p []byte) (int, error) {
+	if '\n' == p[len(p)-1] {
+		p = p[:len(p)-1]
 	}
-	w.Println(w.requestID, "<", string(buf))
-	return w.ResponseWriter.Write(buf)
+	w.Println(w.requestID, "<", string(p))
+	return w.ResponseWriter.Write(p)
 }
 
 func (w *responseWriter) WriteHeader(status int) {
