@@ -10,6 +10,11 @@ Like the Go language itself, Tiger Tonic strives to keep features orthogonal.  I
 
 HTTP routing in the Go standard library is pretty anemic.  Enter `tigertonic.TrieServeMux`.  It accepts an HTTP method, a URL pattern, and an `http.Handler` or an `http.HandlerFunc`.  Components in the URL pattern wrapped in `{` and `}` are wildcards: their values are added to the URL as <code>u.Query().Get("<em>name</em>")</code>.
 
+`tigertonic.HostServeMux`
+-------------------------
+
+Use `tigertonic.HostServeMux` to serve multiple domain names from the same `net.Listener`.
+
 `tigertonic.Marshaled`
 ----------------------
 
@@ -24,7 +29,7 @@ Request bodies will be unmarshaled into a `MyRequest` struct and response bodies
 `tigertonic.Logged`
 -------------------
 
-Wrap an `http.Handler` in `tigertonic.Logged` to have the request and response headers and bodies logged to standard error.  This happens by default if you use `tigertonic.Server` instead of `http.Server`.
+Wrap an `http.Handler` in `tigertonic.Logged` to have the request and response headers and bodies logged to standard error.  The second argument is an optional `func(string) string` called to as requests and responses are logged to give the caller the opportunity to redact sensitive information from log entries.
 
 `tigertonic.Counted` and `tigertonic.Timed`
 -------------------------------------------
