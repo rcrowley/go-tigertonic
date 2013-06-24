@@ -17,7 +17,7 @@ type Logger struct {
 
 func Logged(handler http.Handler, redactor Redactor) *Logger {
 	return &Logger{
-		Logger:  log.New(os.Stderr, "", log.Ltime|log.Lmicroseconds),
+		Logger:  log.New(os.Stdout, "", log.Ltime|log.Lmicroseconds),
 		handler: handler,
 		redactor: redactor,
 	}
