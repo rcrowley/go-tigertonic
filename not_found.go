@@ -7,6 +7,7 @@ import (
 	"net/http"
 )
 
+// NotFound responds 404 to every request, possibly with a JSON body.
 func NotFound(w http.ResponseWriter, r *http.Request) {
 	description := fmt.Sprintf("%s %s not found", r.Method, r.URL.Path)
 	if acceptJSON(r) {
@@ -25,4 +26,5 @@ func NotFound(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// NotFoundHandler responds 404 to every request, possibly with a JSON body.
 func NotFoundHandler() http.Handler { return http.HandlerFunc(NotFound) }
