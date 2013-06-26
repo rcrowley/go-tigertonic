@@ -87,3 +87,10 @@ WTF?
 ----
 
 Dropwizard was named after <http://gunshowcomic.com/316> so Tiger Tonic was named after <http://gunshowcomic.com/338>.
+
+If Tiger Tonic isn't your cup of tea, perhaps one of these fine tools suits you:
+
+* <https://github.com/bmizerany/pat>
+* <https://github.com/hoisie/web.go>
+* <http://www.gorillatoolkit.org>
+* <http://www.gorillatoolkit.org>
