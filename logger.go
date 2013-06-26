@@ -9,12 +9,18 @@ import (
 	"os"
 )
 
+// Logger is an http.Handler that logs requests and responses, complete with
+// paths, statuses, headers, and bodies.  Sensitive information may be redacted
+// by a user-defined function.
 type Logger struct {
 	*log.Logger
 	handler http.Handler
 	redactor Redactor
 }
 
+// Logged returns an http.Handler that logs requests and responses, complete
+// with paths, statuses, headers, and bodies.  Sensitive information may be
+// redacted by a user-defined function.
 func Logged(handler http.Handler, redactor Redactor) *Logger {
 	return &Logger{
 		Logger:  log.New(os.Stdout, "", log.Ltime|log.Lmicroseconds),
@@ -23,6 +29,7 @@ func Logged(handler http.Handler, redactor Redactor) *Logger {
 	}
 }
 
+// Output overrides log.Logger's Output method, calling our redactor first.
 func (l *Logger) Output(calldepth int, s string) error {
 	if nil != l.redactor {
 		s = l.redactor(s)
@@ -30,14 +37,19 @@ func (l *Logger) Output(calldepth int, s string) error {
 	return l.Logger.Output(calldepth, s)
 }
 
+// Print is identical to log.Logger's Print but uses our overridden Output.
 func (l *Logger) Print(v ...interface{}) { l.Output(2, fmt.Sprint(v...)) }
 
+// Printf is identical to log.Logger's Print but uses our overridden Output.
 func (l *Logger) Printf(format string, v ...interface{}) {
 	l.Output(2, fmt.Sprintf(format, v...))
 }
 
+// Println is identical to log.Logger's Print but uses our overridden Output.
 func (l *Logger) Println(v ...interface{}) { l.Output(2, fmt.Sprintln(v...)) }
 
+// ServeHTTP wraps the http.Request and http.ResponseWriter to log to standard
+// output and pass through to the underlying http.Handler.
 func (l *Logger) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	requestID := NewRequestID()
 	l.Printf("%s > %s %s %s\n", requestID, r.Method, r.URL.Path, r.Proto)
@@ -60,10 +72,15 @@ func (l *Logger) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}, r)
 }
 
+// A Redactor is a function that takes and returns a string.  It is called
+// to allow sensitive information to be redacted before it is logged.
 type Redactor func(string) string
 
+// A unique RequestID is given to each request and is included with each line
+// of each log entry.
 type RequestID string
 
+// NewRequestID returns a new 16-character random RequestID.
 func NewRequestID() RequestID {
 	buf := make([]byte, 16)
 	i := 0

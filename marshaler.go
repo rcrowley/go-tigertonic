@@ -170,6 +170,8 @@ func (m *Marshaler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// MarshalerError is the response body for some 500 responses and panics
+// when a handler function is not suitable.
 type MarshalerError string
 
 func NewMarshalerError(format string, args ...interface{}) MarshalerError {
@@ -178,10 +180,12 @@ func NewMarshalerError(format string, args ...interface{}) MarshalerError {
 
 func (e MarshalerError) Error() string { return string(e) }
 
+// Request is just a named empty interface for HTTP request bodies.
 type Request interface{}
 
 var nilRequest = reflect.ValueOf((*Request)(nil))
 
+// Response is just a named empty interface for HTTP response bodies.
 type Response interface{}
 
 func acceptJSON(r *http.Request) bool {

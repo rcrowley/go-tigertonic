@@ -1,15 +1,13 @@
 package tigertonic
 
-// TODO goagain
+import "net/http"
 
-import (
-	"net/http"
-)
-
+// Server is an http.Server with better defaults.
 type Server struct {
 	http.Server
 }
 
+// NewServer returns an http.Server with better defaults.
 func NewServer(addr string, handler http.Handler) *Server {
 	return &Server{http.Server{
 		Addr:           addr,
