@@ -29,7 +29,7 @@ Request bodies will be unmarshaled into a `MyRequest` struct and response bodies
 `tigertonic.Logged`
 -------------------
 
-Wrap an `http.Handler` in `tigertonic.Logged` to have the request and response headers and bodies logged to standard error.  The second argument is an optional `func(string) string` called to as requests and responses are logged to give the caller the opportunity to redact sensitive information from log entries.
+Wrap an `http.Handler` in `tigertonic.Logged` to have the request and response headers and bodies logged to standard error.  The second argument is an optional `func(string) string` called as requests and responses are logged to give the caller the opportunity to redact sensitive information from log entries.
 
 `tigertonic.Counted` and `tigertonic.Timed`
 -------------------------------------------
