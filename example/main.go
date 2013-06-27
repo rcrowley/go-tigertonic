@@ -28,7 +28,7 @@ func init() {
 
 func main() {
 	flag.Parse()
-	go metrics.Log(metrics.DefaultRegistry, 60, log.New(os.Stderr, "metrics ", log.Lmicroseconds))
+	go metrics.Log(metrics.DefaultRegistry, 60e9, log.New(os.Stderr, "metrics ", log.Lmicroseconds))
 	mux := tigertonic.NewTrieServeMux()
 	mux.Handle("POST", "/stuff", tigertonic.Timed(tigertonic.Marshaled(create), "POST-stuff", nil))
 	mux.Handle("GET", "/stuff/{id}", tigertonic.Timed(tigertonic.Marshaled(get), "GET-stuff-id", nil))
