@@ -45,20 +45,26 @@ func (mux *TrieServeMux) HandleFunc(method, pattern string, handler func(http.Re
 	mux.Handle(method, pattern, http.HandlerFunc(handler))
 }
 
+// HandleNamespace registers an http.Handler for the given URL namespace.
+// The matching namespace is stripped from the URL before it is passed to the
+// underlying http.Handler.
+func (mux *TrieServeMux) HandleNamespace(namespace string, handler http.Handler) {
+	log.Printf("handling namespace %s\n", namespace)
+	mux.addRoute("", strings.Split(namespace, "/")[1:], handler)
+}
+
 // ServeHTTP routes an HTTP request to the http.Handler registered for the URL
 // pattern which matches the requested path.  It responds 404 if there is no
 // matching URL pattern and 405 if the requested HTTP method is not allowed.
 func (mux *TrieServeMux) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	params, handler := mux.findRoute(
-		r.Method,
-		strings.Split(r.URL.Path, "/")[1:],
-	)
+	params, handler := mux.findRoute(r, strings.Split(r.URL.Path, "/")[1:])
 	r.URL.RawQuery = r.URL.RawQuery + "&" + params.Encode()
 	handler.ServeHTTP(w, r)
 }
 
 // addRoute recursively adds a URL pattern, parsing wildcards as it goes, to
-// the trie and registers an http.Handler to handle an HTTP method.
+// the trie and registers an http.Handler to handle an HTTP method.  An empty
+// method is used for namespaces.
 func (mux *TrieServeMux) addRoute(method string, paths []string, handler http.Handler) {
 	if 0 == len(paths) {
 		mux.methods[method] = handler
@@ -73,29 +79,31 @@ func (mux *TrieServeMux) addRoute(method string, paths []string, handler http.Ha
 	mux.paths[paths[0]].addRoute(method, paths[1:], handler)
 }
 
-// findRoute recursively searches for a URL pattern in the trie, adds wildcards
-// to the query parameters, and returns an http.Handler.
-func (mux *TrieServeMux) findRoute(method string, paths []string) (url.Values, http.Handler) {
+// findRoute recursively searches for a URL pattern in the trie, strips
+// namespace components from the URL, adds wildcards to the query parameters,
+// and returns an http.Handler.
+func (mux *TrieServeMux) findRoute(r *http.Request, paths []string) (url.Values, http.Handler) {
 	if 0 == len(paths) {
-		if _, ok := mux.methods[method]; !ok {
-			return nil, methodNotAllowedHandler{mux}
+		if handler, ok := mux.methods[r.Method]; ok {
+			return nil, handler
 		}
-		return nil, mux.methods[method]
+		return nil, methodNotAllowedHandler{mux}
 	}
 	if _, ok := mux.paths[paths[0]]; ok {
-		return mux.paths[paths[0]].findRoute(method, paths[1:])
+		return mux.paths[paths[0]].findRoute(r, paths[1:])
 	}
 	if nil != mux.param {
-		params, handler := mux.paths[*mux.param].findRoute(
-			method,
-			paths[1:],
-		)
+		params, handler := mux.paths[*mux.param].findRoute(r, paths[1:])
 		if nil == params {
 			params = make(url.Values)
 		}
 		params.Set(*mux.param, paths[0])
 		params.Set(strings.Trim(*mux.param, "{}"), paths[0])
 		return params, handler
+	}
+	if handler, ok := mux.methods[""]; ok {
+		r.URL.Path = "/" + strings.Join(paths, "/")
+		return nil, handler
 	}
 	return nil, NotFoundHandler()
 }

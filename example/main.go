@@ -33,9 +33,12 @@ func main() {
 	mux.Handle("POST", "/stuff", tigertonic.Timed(tigertonic.Marshaled(create), "POST-stuff", nil))
 	mux.Handle("GET", "/stuff/{id}", tigertonic.Timed(tigertonic.Marshaled(get), "GET-stuff-id", nil))
 	mux.Handle("POST", "/stuff/{id}", tigertonic.Timed(tigertonic.Marshaled(update), "POST-stuff-id", nil))
-	hmux := tigertonic.NewHostServeMux()
-	hmux.Handle("example.com", mux)
-	server := tigertonic.NewServer(*listen, Logged(hmux, func(s string) string {
+	nsMux := tigertonic.NewTrieServeMux()
+	nsMux.HandleNamespace("", mux)
+	nsMux.HandleNamespace("/1.0", mux)
+	hMux := tigertonic.NewHostServeMux()
+	hMux.Handle("example.com", nsMux)
+	server := tigertonic.NewServer(*listen, tigertonic.Logged(hMux, func(s string) string {
 		return strings.Replace(s, "SECRET", "REDACTED", -1)
 	}))
 	if "" != *cert && "" != *key {
@@ -58,7 +61,7 @@ func create(u *url.URL, h http.Header, rq *MyRequest) (int, http.Header, *MyResp
 }
 
 // GET /stuff/{id}
-func get(u *url.URL, h http.Header, rq *MyRequest) (int, http.Header, *MyResponse, error) {
+func get(u *url.URL, h http.Header, _ interface{}) (int, http.Header, *MyResponse, error) {
 	return http.StatusOK, nil, &MyResponse{u.Query().Get("id"), "STUFF"}, nil
 }
 

@@ -98,3 +98,49 @@ func TestParams(t *testing.T) {
 		t.Fatal(w.Status)
 	}
 }
+
+func TestNamespace(t *testing.T) {
+	mux := NewTrieServeMux()
+	mux.HandleFunc("GET", "/bar", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte(r.URL.Path))
+	})
+	nsMux := NewTrieServeMux()
+	nsMux.HandleNamespace("", NotFoundHandler()) // Test longest match wins.
+	nsMux.HandleNamespace("/foo", mux)
+	w := &testResponseWriter{}
+	r, _ := http.NewRequest("GET", "http://example.com/foo/bar", nil)
+	nsMux.ServeHTTP(w, r)
+	if http.StatusOK != w.Status {
+		t.Fatal(w.Status)
+	}
+	if "/bar" != w.Body.String() {
+		t.Fatal(w.Body.String())
+	}
+}
+
+func TestNamespaceParam(t *testing.T) {
+	mux := NewTrieServeMux()
+	mux.HandleFunc("GET", "/bar", func(w http.ResponseWriter, r *http.Request) {
+		q := r.URL.Query()
+		if "bar" != q.Get("foo") {
+			t.Fatal(q.Get("foo"))
+		}
+		if "bar" != q.Get("{foo}") {
+			t.Fatal(q.Get("{foo}"))
+		}
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte(r.URL.Path))
+	})
+	nsMux := NewTrieServeMux()
+	nsMux.HandleNamespace("/{foo}", mux)
+	w := &testResponseWriter{}
+	r, _ := http.NewRequest("GET", "http://example.com/bar/bar", nil)
+	nsMux.ServeHTTP(w, r)
+	if http.StatusOK != w.Status {
+		t.Fatal(w.Status)
+	}
+	if "/bar" != w.Body.String() {
+		t.Fatal(w.Body.String())
+	}
+}

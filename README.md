@@ -10,6 +10,8 @@ Like the Go language itself, Tiger Tonic strives to keep features orthogonal.  I
 
 HTTP routing in the Go standard library is pretty anemic.  Enter `tigertonic.TrieServeMux`.  It accepts an HTTP method, a URL pattern, and an `http.Handler` or an `http.HandlerFunc`.  Components in the URL pattern wrapped in `{` and `}` are wildcards: their values are added to the URL as <code>u.Query().Get("<em>name</em>")</code>.
 
+`HandleNamespace` is like `Handle` but additionally strips the namespace from the URL, making API versioning, multitenant services, and relative links easier to manage.
+
 `tigertonic.HostServeMux`
 -------------------------
 
