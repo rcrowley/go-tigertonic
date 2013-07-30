@@ -14,7 +14,7 @@ import (
 // by a user-defined function.
 type Logger struct {
 	*log.Logger
-	handler http.Handler
+	handler  http.Handler
 	redactor Redactor
 }
 
@@ -23,8 +23,8 @@ type Logger struct {
 // redacted by a user-defined function.
 func Logged(handler http.Handler, redactor Redactor) *Logger {
 	return &Logger{
-		Logger:  log.New(os.Stdout, "", log.Ltime|log.Lmicroseconds),
-		handler: handler,
+		Logger:   log.New(os.Stdout, "", log.Ltime|log.Lmicroseconds),
+		handler:  handler,
 		redactor: redactor,
 	}
 }
