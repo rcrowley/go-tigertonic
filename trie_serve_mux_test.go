@@ -144,3 +144,15 @@ func TestNamespaceParam(t *testing.T) {
 		t.Fatal(w.Body.String())
 	}
 }
+
+func TestHandler(t *testing.T) {
+	mux := NewTrieServeMux()
+	mux.HandleFunc("GET", "/foo/{bar}/baz", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusNoContent)
+	})
+	r, _ := http.NewRequest("GET", "http://example.com/foo/bar/baz", nil)
+	_, pattern := mux.Handler(r)
+	if "/foo/{bar}/baz" != pattern {
+		t.Fatal(pattern)
+	}
+}

@@ -26,12 +26,17 @@ func (mux HostServeMux) HandleFunc(hostname string, handler func(http.ResponseWr
 	mux.Handle(hostname, http.HandlerFunc(handler))
 }
 
+// Handler returns the handler to use for the given HTTP request.
+func (mux HostServeMux) Handler(r *http.Request) (http.Handler, string) {
+	if handler, ok := mux[r.Host]; ok {
+		return handler, r.Host
+	}
+	return NotFoundHandler(), ""
+}
+
 // ServeHTTP routes an HTTP request to the http.Handler registered for the
 // requested hostname.  It responds 404 if the hostname is not registered.
 func (mux HostServeMux) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	handler, ok := mux[r.Host]
-	if !ok {
-		handler = NotFoundHandler()
-	}
+	handler, _ := mux.Handler(r)
 	handler.ServeHTTP(w, r)
 }
