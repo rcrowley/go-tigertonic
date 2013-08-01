@@ -138,9 +138,10 @@ type responseWriter struct {
 
 func (w *responseWriter) Write(p []byte) (int, error) {
 	if '\n' == p[len(p)-1] {
-		p = p[:len(p)-1]
+		w.Println(w.requestID, "<", string(p[:len(p)-1]))
+	} else {
+		w.Println(w.requestID, "<", string(p))
 	}
-	w.Println(w.requestID, "<", string(p))
 	return w.ResponseWriter.Write(p)
 }
 
