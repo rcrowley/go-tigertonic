@@ -152,4 +152,5 @@ func (w *responseWriter) WriteHeader(status int) {
 		}
 	}
 	w.Println(w.requestID, "<")
+	w.ResponseWriter.WriteHeader(status)
 }
