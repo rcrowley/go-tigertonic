@@ -93,6 +93,7 @@ Dropwizard was named after <http://gunshowcomic.com/316> so Tiger Tonic was name
 If Tiger Tonic isn't your cup of tea, perhaps one of these fine tools suits you:
 
 * <https://code.google.com/p/gorest/>
+* <https://github.com/emicklei/go-restful>
 * <http://www.gorillatoolkit.org>
 * <https://github.com/bmizerany/pat>
 * <https://github.com/hoisie/web.go>
