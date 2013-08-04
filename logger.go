@@ -1,7 +1,6 @@
 package tigertonic
 
 import (
-	"crypto/rand"
 	"fmt"
 	"io"
 	"log"
@@ -82,37 +81,7 @@ type RequestID string
 
 // NewRequestID returns a new 16-character random RequestID.
 func NewRequestID() RequestID {
-	buf := make([]byte, 16)
-	i := 0
-	for i < 16 {
-		n, err := rand.Read(buf[i:])
-		if nil != err {
-			panic(err)
-		}
-		i += n
-	}
-	for i = 0; i < 16; i++ {
-		buf[i] = encodingBase62[buf[i]]
-	}
-	return RequestID(buf)
-}
-
-var encodingBase62 [256]byte
-
-func init() {
-	buf := make([]byte, 256)
-	i := 0
-	for i < 256 {
-		n, err := rand.Read(buf[i:])
-		if nil != err {
-			panic(err)
-		}
-		i += n
-	}
-	s := "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
-	for i := 0; i < 256; i++ {
-		encodingBase62[i] = s[uint8(float32(61)*float32(buf[i])/float32(255))]
-	}
+	return RequestID(RandomBase62Bytes(16))
 }
 
 type readCloser struct {
