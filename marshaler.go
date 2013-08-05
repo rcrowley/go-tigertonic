@@ -146,12 +146,15 @@ func (m *Marshaler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	header := out[1].Interface().(http.Header)
 	rs := out[2].Interface().(Response)
 	if !out[3].IsNil() {
-		if 100 > status {
+		err := out[3].Interface().(error)
+		if httpEquivError, ok := err.(HTTPEquivError); ok {
+			w.WriteHeader(httpEquivError.Status())
+		} else if 100 > status {
 			w.WriteHeader(http.StatusInternalServerError)
 		} else {
 			w.WriteHeader(status)
 		}
-		writeJSONError(w, out[3].Interface().(error))
+		writeJSONError(w, err)
 		return
 	}
 	if nil != header {
