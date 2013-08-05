@@ -7,7 +7,7 @@ import (
 
 var (
 	alphabet string = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
-	base *big.Int
+	base     *big.Int
 )
 
 func RandomBase62Bytes(ii int) []byte {
