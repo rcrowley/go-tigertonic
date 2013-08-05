@@ -41,10 +41,14 @@ func main() {
 	server := tigertonic.NewServer(*listen, tigertonic.Logged(hMux, func(s string) string {
 		return strings.Replace(s, "SECRET", "REDACTED", -1)
 	}))
+	var err error
 	if "" != *cert && "" != *key {
-		server.ListenAndServeTLS(*cert, *key)
+		err = server.ListenAndServeTLS(*cert, *key)
 	} else {
-		server.ListenAndServe()
+		err = server.ListenAndServe()
+	}
+	if nil != err {
+		log.Fatalln(err)
 	}
 }
 
