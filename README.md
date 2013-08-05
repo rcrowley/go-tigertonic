@@ -36,6 +36,8 @@ func myHandler(*url.URL, http.Header, *MyRequest) (int, http.Header, *MyResponse
 }
 ```
 
+Alternatively, you can return a valid status as the first output parameter and an `error` as the last; that status will be used in the error response.
+
 `tigertonic.Logged`
 -------------------
 
