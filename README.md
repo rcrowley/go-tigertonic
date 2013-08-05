@@ -33,6 +33,7 @@ Should you need to respond with an error, the `tigertonic.HTTPEquivError` interf
 ```go
 func myHandler(*url.URL, http.Header, *MyRequest) (int, http.Header, *MyResponse, error) {
     return 0, nil, nil, tigertonic.BadRequest{errors.New("Bad Request")}
+}
 ```
 
 `tigertonic.Logged`
