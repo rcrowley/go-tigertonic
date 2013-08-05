@@ -88,7 +88,7 @@ func myHandler(u *url.URL, h http.Header, *MyRequest) (int, http.Header, *MyResp
 Wire it all up in `main.main`!
 
 ```go
-mux := NewTrieServeMux()
+mux := tigertonic.NewTrieServeMux()
 mux.Handle("GET", "/stuff", tigertonic.Marshaled(tigertonic.Timed(myHandler, "myHandler", nil)))
 tigertonic.NewServer(":8000", tigertonic.Logged(mux, nil)).ListenAndServe()
 ```
