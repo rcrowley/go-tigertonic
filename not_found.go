@@ -7,15 +7,20 @@ import (
 	"net/http"
 )
 
+// NotFoundHandler responds 404 to every request, possibly with a JSON body.
+func NotFoundHandler() http.Handler {
+	return http.HandlerFunc(NotFoundHandlerFunc)
+}
+
 // NotFound responds 404 to every request, possibly with a JSON body.
-func NotFound(w http.ResponseWriter, r *http.Request) {
+func NotFoundHandlerFunc(w http.ResponseWriter, r *http.Request) {
 	description := fmt.Sprintf("%s %s not found", r.Method, r.URL.Path)
 	if acceptJSON(r) {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusNotFound)
 		if err := json.NewEncoder(w).Encode(map[string]string{
 			"description": description,
-			"error":       "NotFound",
+			"error":       "tigertonic.NotFound", // HTTPEquivError consistency.
 		}); nil != err {
 			log.Println(err)
 		}
@@ -25,6 +30,3 @@ func NotFound(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprint(w, description)
 	}
 }
-
-// NotFoundHandler responds 404 to every request, possibly with a JSON body.
-func NotFoundHandler() http.Handler { return http.HandlerFunc(NotFound) }
