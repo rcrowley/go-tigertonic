@@ -23,7 +23,7 @@ Use `tigertonic.HostServeMux` to serve multiple domain names from the same `net.
 Wrap a function in `tigertonic.Marshaled` to turn it into an `http.Handler`.  The function signature must be something like this or `tigertonic.Marshaled` will panic:
 
 ```go
-func myHandler(*url.URL, http.Header, *MyRequest) (int, http.Header, *MyResponse)
+func myHandler(*url.URL, http.Header, *MyRequest) (int, http.Header, *MyResponse, error)
 ```
 
 Request bodies will be unmarshaled into a `MyRequest` struct and response bodies will be marshaled from `MyResponse` structs.
