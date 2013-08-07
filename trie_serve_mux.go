@@ -53,9 +53,15 @@ func (mux *TrieServeMux) HandleNamespace(namespace string, handler http.Handler)
 	mux.add("", strings.Split(namespace, "/")[1:], handler, namespace)
 }
 
-// Handler returns the handler to use for the given HTTP request.
+// Handler returns the handler to use for the given HTTP request and mutates
+// the querystring to add wildcards extracted from the URL.
+//
+// Yes, it's bad that this mutates the request.  On the other hand, this is
+// a relatively standard interface and is most used in testing where behavior
+// like this can be allowed.
 func (mux *TrieServeMux) Handler(r *http.Request) (http.Handler, string) {
-	_, handler, pattern := mux.find(r, strings.Split(r.URL.Path, "/")[1:])
+	params, handler, pattern := mux.find(r, strings.Split(r.URL.Path, "/")[1:])
+	r.URL.RawQuery = r.URL.RawQuery + "&" + params.Encode()
 	return handler, pattern
 }
 
@@ -63,8 +69,7 @@ func (mux *TrieServeMux) Handler(r *http.Request) (http.Handler, string) {
 // pattern which matches the requested path.  It responds 404 if there is no
 // matching URL pattern and 405 if the requested HTTP method is not allowed.
 func (mux *TrieServeMux) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	params, handler, _ := mux.find(r, strings.Split(r.URL.Path, "/")[1:])
-	r.URL.RawQuery = r.URL.RawQuery + "&" + params.Encode()
+	handler, _ := mux.Handler(r)
 	handler.ServeHTTP(w, r)
 }
 
