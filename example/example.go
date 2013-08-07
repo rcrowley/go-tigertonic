@@ -16,6 +16,9 @@ var (
 	cert   = flag.String("cert", "", "certificate pathname")
 	key    = flag.String("key", "", "private key pathname")
 	listen = flag.String("listen", "127.0.0.1:8000", "listen address")
+
+	hMux tigertonic.HostServeMux
+	mux, nsMux *tigertonic.TrieServeMux
 )
 
 func init() {
@@ -24,20 +27,21 @@ func init() {
 		flag.PrintDefaults()
 	}
 	log.SetFlags(log.Ltime | log.Lmicroseconds | log.Lshortfile)
+
+	mux = tigertonic.NewTrieServeMux()
+	mux.Handle("POST", "/stuff", tigertonic.Timed(tigertonic.Marshaled(create), "POST-stuff", nil))
+	mux.Handle("GET", "/stuff/{id}", tigertonic.Timed(tigertonic.Marshaled(get), "GET-stuff-id", nil))
+	mux.Handle("POST", "/stuff/{id}", tigertonic.Timed(tigertonic.Marshaled(update), "POST-stuff-id", nil))
+	nsMux = tigertonic.NewTrieServeMux()
+	nsMux.HandleNamespace("", mux)
+	nsMux.HandleNamespace("/1.0", mux)
+	hMux = tigertonic.NewHostServeMux()
+	hMux.Handle("example.com", nsMux)
 }
 
 func main() {
 	flag.Parse()
 	go metrics.Log(metrics.DefaultRegistry, 60e9, log.New(os.Stderr, "metrics ", log.Lmicroseconds))
-	mux := tigertonic.NewTrieServeMux()
-	mux.Handle("POST", "/stuff", tigertonic.Timed(tigertonic.Marshaled(create), "POST-stuff", nil))
-	mux.Handle("GET", "/stuff/{id}", tigertonic.Timed(tigertonic.Marshaled(get), "GET-stuff-id", nil))
-	mux.Handle("POST", "/stuff/{id}", tigertonic.Timed(tigertonic.Marshaled(update), "POST-stuff-id", nil))
-	nsMux := tigertonic.NewTrieServeMux()
-	nsMux.HandleNamespace("", mux)
-	nsMux.HandleNamespace("/1.0", mux)
-	hMux := tigertonic.NewHostServeMux()
-	hMux.Handle("example.com", nsMux)
 	server := tigertonic.NewServer(*listen, tigertonic.Logged(hMux, func(s string) string {
 		return strings.Replace(s, "SECRET", "REDACTED", -1)
 	}))
