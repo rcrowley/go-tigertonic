@@ -31,6 +31,9 @@ func (mux HostServeMux) Handler(r *http.Request) (http.Handler, string) {
 	if handler, ok := mux[r.Host]; ok {
 		return handler, r.Host
 	}
+	if handler, ok := mux[r.URL.Host]; ok {
+		return handler, r.URL.Host
+	}
 	return NotFoundHandler(), ""
 }
 
