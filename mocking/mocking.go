@@ -32,7 +32,7 @@ func URL(h TestableHandler, method, rawurl string) *url.URL {
 	if nil != h {
 		rq := &http.Request{
 			Method: method,
-			URL: u,
+			URL:    u,
 		}
 		var ok bool
 		for {

@@ -17,7 +17,7 @@ var (
 	key    = flag.String("key", "", "private key pathname")
 	listen = flag.String("listen", "127.0.0.1:8000", "listen address")
 
-	hMux tigertonic.HostServeMux
+	hMux       tigertonic.HostServeMux
 	mux, nsMux *tigertonic.TrieServeMux
 )
 

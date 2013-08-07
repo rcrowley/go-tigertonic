@@ -41,7 +41,7 @@ func TestFirst4(t *testing.T) {
 	}
 }
 
-type fatalHandler struct{
+type fatalHandler struct {
 	t *testing.T
 }
 
