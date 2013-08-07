@@ -60,7 +60,7 @@ func main() {
 func create(u *url.URL, h http.Header, rq *MyRequest) (int, http.Header, *MyResponse, error) {
 	return http.StatusCreated, http.Header{
 		"Content-Location": {fmt.Sprintf(
-			"%s://%s/stuff/%s",
+			"%s://%s/1.0/stuff/%s", // TODO Don't hard-code this.
 			u.Scheme,
 			u.Host,
 			rq.ID,
