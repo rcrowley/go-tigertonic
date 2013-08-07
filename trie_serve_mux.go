@@ -36,7 +36,7 @@ func NewTrieServeMux() *TrieServeMux {
 // Handle registers an http.Handler for the given HTTP method and URL pattern.
 func (mux *TrieServeMux) Handle(method, pattern string, handler http.Handler) {
 	log.Printf("handling %s %s\n", method, pattern)
-	mux.addRoute(method, strings.Split(pattern, "/")[1:], handler, pattern)
+	mux.add(method, strings.Split(pattern, "/")[1:], handler, pattern)
 }
 
 // HandleFunc registers a handler function for the given HTTP method and URL
@@ -50,12 +50,12 @@ func (mux *TrieServeMux) HandleFunc(method, pattern string, handler func(http.Re
 // underlying http.Handler.
 func (mux *TrieServeMux) HandleNamespace(namespace string, handler http.Handler) {
 	log.Printf("handling namespace %s\n", namespace)
-	mux.addRoute("", strings.Split(namespace, "/")[1:], handler, namespace)
+	mux.add("", strings.Split(namespace, "/")[1:], handler, namespace)
 }
 
 // Handler returns the handler to use for the given HTTP request.
 func (mux *TrieServeMux) Handler(r *http.Request) (http.Handler, string) {
-	_, handler, pattern := mux.findRoute(r, strings.Split(r.URL.Path, "/")[1:])
+	_, handler, pattern := mux.find(r, strings.Split(r.URL.Path, "/")[1:])
 	return handler, pattern
 }
 
@@ -63,15 +63,15 @@ func (mux *TrieServeMux) Handler(r *http.Request) (http.Handler, string) {
 // pattern which matches the requested path.  It responds 404 if there is no
 // matching URL pattern and 405 if the requested HTTP method is not allowed.
 func (mux *TrieServeMux) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	params, handler, _ := mux.findRoute(r, strings.Split(r.URL.Path, "/")[1:])
+	params, handler, _ := mux.find(r, strings.Split(r.URL.Path, "/")[1:])
 	r.URL.RawQuery = r.URL.RawQuery + "&" + params.Encode()
 	handler.ServeHTTP(w, r)
 }
 
-// addRoute recursively adds a URL pattern, parsing wildcards as it goes, to
+// add recursively adds a URL pattern, parsing wildcards as it goes, to
 // the trie and registers an http.Handler to handle an HTTP method.  An empty
 // method indicates a namespace.
-func (mux *TrieServeMux) addRoute(method string, paths []string, handler http.Handler, pattern string) {
+func (mux *TrieServeMux) add(method string, paths []string, handler http.Handler, pattern string) {
 	if 0 == len(paths) {
 		mux.methods[method] = handler
 		mux.pattern = pattern
@@ -83,13 +83,13 @@ func (mux *TrieServeMux) addRoute(method string, paths []string, handler http.Ha
 	if _, ok := mux.paths[paths[0]]; !ok {
 		mux.paths[paths[0]] = NewTrieServeMux()
 	}
-	mux.paths[paths[0]].addRoute(method, paths[1:], handler, pattern)
+	mux.paths[paths[0]].add(method, paths[1:], handler, pattern)
 }
 
-// findRoute recursively searches for a URL pattern in the trie, strips
+// find recursively searches for a URL pattern in the trie, strips
 // namespace components from the URL, adds wildcards to the query parameters,
 // and returns extra query parameters, a handler, and the pattern that matched.
-func (mux *TrieServeMux) findRoute(r *http.Request, paths []string) (url.Values, http.Handler, string) {
+func (mux *TrieServeMux) find(r *http.Request, paths []string) (url.Values, http.Handler, string) {
 	if 0 == len(paths) {
 		if handler, ok := mux.methods[r.Method]; ok {
 			return nil, handler, mux.pattern
@@ -97,10 +97,10 @@ func (mux *TrieServeMux) findRoute(r *http.Request, paths []string) (url.Values,
 		return nil, methodNotAllowedHandler{mux}, ""
 	}
 	if _, ok := mux.paths[paths[0]]; ok {
-		return mux.paths[paths[0]].findRoute(r, paths[1:])
+		return mux.paths[paths[0]].find(r, paths[1:])
 	}
 	if nil != mux.param {
-		params, handler, pattern := mux.paths[*mux.param].findRoute(r, paths[1:])
+		params, handler, pattern := mux.paths[*mux.param].find(r, paths[1:])
 		if nil == params {
 			params = make(url.Values)
 		}
