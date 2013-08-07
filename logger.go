@@ -52,9 +52,9 @@ func (l *Logger) Println(v ...interface{}) { l.Output(2, fmt.Sprintln(v...)) }
 func (l *Logger) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	requestID := NewRequestID()
 	l.Printf("%s > %s %s %s\n", requestID, r.Method, r.URL.Path, r.Proto)
-	for name, values := range r.Header {
+	for key, values := range r.Header {
 		for _, value := range values {
-			l.Printf("%s > %s: %s\n", requestID, name, value)
+			l.Printf("%s > %s: %s\n", requestID, key, value)
 		}
 	}
 	l.Println(requestID, ">")
