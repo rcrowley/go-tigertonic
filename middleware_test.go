@@ -1,6 +1,7 @@
 package tigertonic
 
 import (
+	"errors"
 	"net/http"
 	"testing"
 )
@@ -36,7 +37,29 @@ func TestFirst4(t *testing.T) {
 	w := &testResponseWriter{}
 	r, _ := http.NewRequest("GET", "http://example.com/", nil)
 	First(NotFoundHandler(), &fatalHandler{t}).ServeHTTP(w, r)
-	if 404 != w.Status {
+	if http.StatusNotFound != w.Status {
+		t.Fatal(w.Status)
+	}
+}
+
+func TestIfFalse(t *testing.T) {
+	w := &testResponseWriter{}
+	r, _ := http.NewRequest("GET", "http://example.com/", nil)
+	If(func (r *http.Request) error {
+		return Unauthorized{errors.New("Unauthorized")}
+	}, NotFoundHandler()).ServeHTTP(w, r)
+	if http.StatusUnauthorized != w.Status {
+		t.Fatal(w.Status)
+	}
+}
+
+func TestIfTrue(t *testing.T) {
+	w := &testResponseWriter{}
+	r, _ := http.NewRequest("GET", "http://example.com/", nil)
+	If(func (r *http.Request) error {
+		return nil
+	}, NotFoundHandler()).ServeHTTP(w, r)
+	if http.StatusNotFound != w.Status {
 		t.Fatal(w.Status)
 	}
 }
