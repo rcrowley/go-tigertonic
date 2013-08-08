@@ -8,7 +8,7 @@ import (
 )
 
 // NotFoundHandler responds 404 to every request, possibly with a JSON body.
-func NotFoundHandler() http.Handler {
+func NotFoundHandler() http.HandlerFunc {
 	return http.HandlerFunc(NotFoundHandlerFunc)
 }
 

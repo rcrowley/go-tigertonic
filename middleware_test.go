@@ -9,7 +9,7 @@ func TestFirst1(t *testing.T) {
 	w := &testResponseWriter{}
 	r, _ := http.NewRequest("GET", "http://example.com/", nil)
 	First(NotFoundHandler()).ServeHTTP(w, r)
-	if 404 != w.Status {
+	if http.StatusNotFound != w.Status {
 		t.Fatal(w.Status)
 	}
 }
@@ -18,7 +18,7 @@ func TestFirst2(t *testing.T) {
 	w := &testResponseWriter{}
 	r, _ := http.NewRequest("GET", "http://example.com/", nil)
 	First(noopHandler{}, NotFoundHandler()).ServeHTTP(w, r)
-	if 404 != w.Status {
+	if http.StatusNotFound != w.Status {
 		t.Fatal(w.Status)
 	}
 }
@@ -27,7 +27,7 @@ func TestFirst3(t *testing.T) {
 	w := &testResponseWriter{}
 	r, _ := http.NewRequest("GET", "http://example.com/", nil)
 	First(noopHandler{}, noopHandler{}, NotFoundHandler()).ServeHTTP(w, r)
-	if 404 != w.Status {
+	if http.StatusNotFound != w.Status {
 		t.Fatal(w.Status)
 	}
 }

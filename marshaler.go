@@ -149,7 +149,7 @@ func (m *Marshaler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		err := out[3].Interface().(error)
 		if httpEquivError, ok := err.(HTTPEquivError); ok {
 			w.WriteHeader(httpEquivError.Status())
-		} else if 100 > status {
+		} else if http.StatusContinue > status {
 			w.WriteHeader(http.StatusInternalServerError)
 		} else {
 			w.WriteHeader(status)
@@ -166,7 +166,7 @@ func (m *Marshaler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	w.WriteHeader(status)
-	if nil != rs && 204 != status {
+	if nil != rs && http.StatusNoContent != status {
 		if err := json.NewEncoder(w).Encode(rs); nil != err {
 			log.Println(err)
 		}

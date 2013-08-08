@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/rcrowley/go-tigertonic/mocking"
+	"net/http"
 	"testing"
 )
 
@@ -14,7 +15,7 @@ func TestCreate(t *testing.T) {
 	if nil != err {
 		t.Fatal(err)
 	}
-	if 201 != s {
+	if http.StatusCreated != s {
 		t.Fatal(s)
 	}
 	if "http://example.com/1.0/stuff/ID" != h.Get("Content-Location") {
@@ -34,7 +35,7 @@ func TestGet(t *testing.T) {
 	if nil != err {
 		t.Fatal(err)
 	}
-	if 200 != s {
+	if http.StatusOK != s {
 		t.Fatal(s)
 	}
 	if "ID" != rs.ID || "STUFF" != rs.Stuff {
@@ -51,7 +52,7 @@ func TestUpdate(t *testing.T) {
 	if nil != err {
 		t.Fatal(err)
 	}
-	if 202 != s {
+	if http.StatusAccepted != s {
 		t.Fatal(s)
 	}
 	if "ID" != rs.ID || "STUFF" != rs.Stuff {
