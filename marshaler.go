@@ -193,6 +193,9 @@ type Response interface{}
 
 func acceptJSON(r *http.Request) bool {
 	accept := r.Header.Get("Accept")
+	if "" == accept {
+		return true
+	}
 	return strings.Contains(accept, "*/*") || strings.Contains(accept, "application/json")
 }
 
