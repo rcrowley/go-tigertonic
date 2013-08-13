@@ -2,6 +2,11 @@ package tigertonic
 
 import "net/http"
 
+// SnakeCaseHTTPEquivErrors being true will cause tigertonic.HTTPEquivError
+// error responses to be written as (for example) "not_found" rather than
+// "tigertonic.NotFound".
+var SnakeCaseHTTPEquivErrors bool
+
 type HTTPEquivError interface {
 	error
 	Status() int

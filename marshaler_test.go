@@ -156,6 +156,23 @@ func TestHTTPEquivError(t *testing.T) {
 	}
 }
 
+func TestSnakeCaseHTTPEquivError(t *testing.T) {
+	SnakeCaseHTTPEquivErrors = true
+	defer func() { SnakeCaseHTTPEquivErrors = false }()
+	w := &testResponseWriter{}
+	r, _ := http.NewRequest("GET", "http://example.com/foo", nil)
+	r.Header.Set("Accept", "application/json")
+	Marshaled(func(u *url.URL, h http.Header, rq *testRequest) (int, http.Header, *testResponse, error) {
+		return 0, nil, nil, ServiceUnavailable{errors.New("foo")}
+	}).ServeHTTP(w, r)
+	if http.StatusServiceUnavailable != w.Status {
+		t.Fatal(w.Status)
+	}
+	if "{\"description\":\"foo\",\"error\":\"service_unavailable\"}\n" != w.Body.String() {
+		t.Fatal(w.Body.String())
+	}
+}
+
 func TestNoContent(t *testing.T) {
 	w := &testResponseWriter{}
 	r, _ := http.NewRequest("GET", "http://example.com/foo", nil)

@@ -200,17 +200,22 @@ func acceptJSON(r *http.Request) bool {
 }
 
 func writeJSONError(w io.Writer, err error) {
-	t := reflect.TypeOf(err)
-	if reflect.Ptr == t.Kind() {
-		t = t.Elem()
-	}
-	s := t.String()
-	if r, _ := utf8.DecodeRuneInString(t.Name()); unicode.IsLower(r) {
-		s = "error"
+	var e string
+	if httpEquivError, ok := err.(HTTPEquivError); ok && SnakeCaseHTTPEquivErrors {
+		e = strings.Replace(strings.ToLower(http.StatusText(httpEquivError.Status())), " ", "_", -1)
+	} else {
+		t := reflect.TypeOf(err)
+		if reflect.Ptr == t.Kind() {
+			t = t.Elem()
+		}
+		e = t.String()
+		if r, _ := utf8.DecodeRuneInString(t.Name()); unicode.IsLower(r) {
+			e = "error"
+		}
 	}
 	if err := json.NewEncoder(w).Encode(map[string]string{
 		"description": err.Error(),
-		"error":       s,
+		"error":       e,
 	}); nil != err {
 		log.Println(err)
 	}

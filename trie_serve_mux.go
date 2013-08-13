@@ -156,9 +156,15 @@ func (h methodNotAllowedHandler) ServeHTTP(w http.ResponseWriter, r *http.Reques
 		if acceptJSON(r) {
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusMethodNotAllowed)
+			var e string
+			if SnakeCaseHTTPEquivErrors {
+				e = "method_not_allowed"
+			} else {
+				e = "tigertonic.MethodNotAllowed"
+			}
 			if err := json.NewEncoder(w).Encode(map[string]string{
 				"description": description,
-				"error":       "MethodNotAllowed",
+				"error":       e,
 			}); nil != err {
 				log.Println(err)
 			}

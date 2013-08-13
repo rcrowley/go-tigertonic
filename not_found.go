@@ -18,9 +18,15 @@ func NotFoundHandlerFunc(w http.ResponseWriter, r *http.Request) {
 	if acceptJSON(r) {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusNotFound)
+		var e string
+		if SnakeCaseHTTPEquivErrors {
+			e = "not_found"
+		} else {
+			e = "tigertonic.NotFound"
+		}
 		if err := json.NewEncoder(w).Encode(map[string]string{
 			"description": description,
-			"error":       "tigertonic.NotFound", // HTTPEquivError consistency.
+			"error":       e,
 		}); nil != err {
 			log.Println(err)
 		}
