@@ -74,6 +74,7 @@ func TestMarshaledPanicOut3(t *testing.T) {
 func TestNotAcceptable(t *testing.T) {
 	w := &testResponseWriter{}
 	r, _ := http.NewRequest("GET", "http://example.com/foo", nil)
+	r.Header.Set("Accept", "text/plain")
 	Marshaled(func(u *url.URL, h http.Header, rq *testRequest) (int, http.Header, *testResponse, error) {
 		return http.StatusNoContent, nil, nil, nil
 	}).ServeHTTP(w, r)
