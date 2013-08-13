@@ -174,6 +174,21 @@ func TestSnakeCaseHTTPEquivError(t *testing.T) {
 	}
 }
 
+func TestNamedError(t *testing.T) {
+	w := &testResponseWriter{}
+	r, _ := http.NewRequest("GET", "http://example.com/foo", nil)
+	r.Header.Set("Accept", "application/json")
+	Marshaled(func(u *url.URL, h http.Header, rq *testRequest) (int, http.Header, *testResponse, error) {
+		return 0, nil, nil, testNamedError("foo")
+	}).ServeHTTP(w, r)
+	if http.StatusInternalServerError != w.Status {
+		t.Fatal(w.Status)
+	}
+	if "{\"description\":\"foo\",\"error\":\"foo\"}\n" != w.Body.String() {
+		t.Fatal(w.Body.String())
+	}
+}
+
 func TestNoContent(t *testing.T) {
 	w := &testResponseWriter{}
 	r, _ := http.NewRequest("GET", "http://example.com/foo", nil)
@@ -240,6 +255,16 @@ func testMarshaledPanic(i interface{}, t *testing.T) {
 		}
 	}()
 	Marshaled(i)
+}
+
+type testNamedError string
+
+func (err testNamedError) Error() string {
+	return string(err)
+}
+
+func (err testNamedError) Name() string {
+	return string(err)
 }
 
 type testRequest struct {

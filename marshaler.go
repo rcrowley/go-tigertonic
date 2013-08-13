@@ -201,7 +201,9 @@ func acceptJSON(r *http.Request) bool {
 
 func writeJSONError(w io.Writer, err error) {
 	var e string
-	if httpEquivError, ok := err.(HTTPEquivError); ok && SnakeCaseHTTPEquivErrors {
+	if namedError, ok := err.(NamedError); ok {
+		e = namedError.Name()
+	} else if httpEquivError, ok := err.(HTTPEquivError); ok && SnakeCaseHTTPEquivErrors {
 		e = strings.Replace(strings.ToLower(http.StatusText(httpEquivError.Status())), " ", "_", -1)
 	} else {
 		t := reflect.TypeOf(err)
