@@ -135,8 +135,26 @@ func (h methodNotAllowedHandler) ServeHTTP(w http.ResponseWriter, r *http.Reques
 	sort.Strings(methods)
 	w.Header().Set("Allow", strings.Join(methods, ", "))
 	if "OPTIONS" == r.Method {
-		if r.Header.Get("Access-Control-Request-Method") != "" {
+		if method := r.Header.Get("Access-Control-Request-Method"); method != "" {
 			w.Header().Set("Access-Control-Allow-Methods", strings.Join(methods, ", "))
+			if r.Header.Get("Origin") != "" {
+				allowed_origin := ""
+				if cors, ok := h.mux.methods[method].(*CORSHandler); ok == true {
+					if origins, ok := (*cors.Header)["Access-Control-Allow-Origin"]; ok {
+						for _, origin := range origins {
+							if origin == r.Header.Get("Origin") || origin == "*" {
+								allowed_origin = origin
+								break
+							}
+						}
+					}
+				}
+
+				if allowed_origin == "" {
+					allowed_origin = "null"
+				}
+				w.Header().Set("Access-Control-Allow-Origin", allowed_origin)
+			}
 		}
 		if acceptJSON(r) {
 			w.Header().Set("Content-Type", "application/json")
