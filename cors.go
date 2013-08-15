@@ -15,15 +15,15 @@ const CORSAllowMethods string = "Access-Control-Allow-Methods"
 
 type CORSHandler struct {
 	http.Handler
-	Header *http.Header
+	Header http.Header
 }
 
 type CORSBuilder struct {
-	*http.Header
+	http.Header
 }
 
 func NewCORSBuilder() *CORSBuilder {
-	return &CORSBuilder{&http.Header{}}
+	return &CORSBuilder{http.Header{}}
 }
 
 func (self *CORSBuilder) SetAllowedOrigin(origin string) *CORSBuilder {
