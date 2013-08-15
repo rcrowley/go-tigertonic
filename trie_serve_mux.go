@@ -137,17 +137,10 @@ func (h methodNotAllowedHandler) ServeHTTP(w http.ResponseWriter, r *http.Reques
 	if "OPTIONS" == r.Method {
 		if method := r.Header.Get(CORSRequestMethod); method != "" {
 			w.Header().Set(CORSAllowMethods, strings.Join(methods, ", "))
-			if r.Header.Get(CORSRequestOrigin) != "" {
+			if requestOrigin := r.Header.Get(CORSRequestOrigin); requestOrigin != "" {
 				allowedOrigin := ""
 				if cors, ok := h.mux.methods[method].(*CORSHandler); ok {
-					if origins, ok := cors.Header[CORSAllowOrigin]; ok {
-						for _, origin := range origins {
-							if origin == r.Header.Get(CORSRequestOrigin) || origin == "*" {
-								allowedOrigin = origin
-								break
-							}
-						}
-					}
+					allowedOrigin = cors.getResponseOrigin(requestOrigin)
 				}
 
 				if allowedOrigin == "" {

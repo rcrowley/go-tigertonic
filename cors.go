@@ -18,6 +18,22 @@ type CORSHandler struct {
 	Header http.Header
 }
 
+func (self *CORSHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	if requestOrigin := r.Header.Get("Origin"); requestOrigin != "" {
+		w.Header().Set(CORSAllowOrigin, self.getResponseOrigin(requestOrigin))
+	}
+	self.Handler.ServeHTTP(w, r)
+}
+
+func (self *CORSHandler) getResponseOrigin(requestOrigin string) string {
+	if self.Header.Get(CORSAllowOrigin) == "*" {
+		return "*"
+	} else if self.Header.Get(CORSAllowOrigin) == requestOrigin {
+		return requestOrigin
+	}
+	return "null"
+}
+
 type CORSBuilder struct {
 	http.Header
 }
