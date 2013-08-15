@@ -22,51 +22,51 @@ func TestCORSOrigin(t *testing.T) {
 
 	w := &testResponseWriter{}
 	r, _ := http.NewRequest("OPTIONS", "http://example.com/baz", nil)
-	r.Header.Set("Access-Control-Request-Method", "GET")
+	r.Header.Set(CORSRequestMethod, "GET")
 	mux.ServeHTTP(w, r)
 	if http.StatusOK != w.Status {
 		t.Fatal(w.Status)
 	}
-	if "GET, HEAD, OPTIONS" != w.Header().Get("Access-Control-Allow-Methods") {
+	if "GET, HEAD, OPTIONS" != w.Header().Get(CORSAllowMethods) {
 		t.Fatal(w.Header().Get("Allow"))
 	}
 
 	// requesting secured resource with invalid domain
 	w = &testResponseWriter{}
 	r, _ = http.NewRequest("OPTIONS", "http://example.com/baz", nil)
-	r.Header.Set("Origin", "http://baddomain.com")
-	r.Header.Set("Access-Control-Request-Method", "GET")
+	r.Header.Set(CORSRequestOrigin, "http://baddomain.com")
+	r.Header.Set(CORSRequestMethod, "GET")
 	mux.ServeHTTP(w, r)
 	if http.StatusOK != w.Status {
 		t.Fatal(w.Status)
 	}
-	if "null" != w.Header().Get("Access-Control-Allow-Origin") {
-		t.Fatal(w.Header().Get("Access-Control-Allow-Origin"))
+	if "null" != w.Header().Get(CORSAllowOrigin) {
+		t.Fatal(w.Header().Get(CORSAllowOrigin))
 	}
 
 	// requesting unsecured/wildcard resource with invalid domain
 	w = &testResponseWriter{}
 	r, _ = http.NewRequest("OPTIONS", "http://example.com/foo", nil)
-	r.Header.Set("Origin", "http://baddomain.com")
-	r.Header.Set("Access-Control-Request-Method", "GET")
+	r.Header.Set(CORSRequestOrigin, "http://baddomain.com")
+	r.Header.Set(CORSRequestMethod, "GET")
 	mux.ServeHTTP(w, r)
 	if http.StatusOK != w.Status {
 		t.Fatal(w.Status)
 	}
-	if "*" != w.Header().Get("Access-Control-Allow-Origin") {
-		t.Fatal(w.Header().Get("Access-Control-Allow-Origin"))
+	if "*" != w.Header().Get(CORSAllowOrigin) {
+		t.Fatal(w.Header().Get(CORSAllowOrigin))
 	}
 
 	// requesting secured resource with valid domain
 	w = &testResponseWriter{}
 	r, _ = http.NewRequest("OPTIONS", "http://example.com/baz", nil)
-	r.Header.Set("Origin", "http://gooddomain.com")
-	r.Header.Set("Access-Control-Request-Method", "GET")
+	r.Header.Set(CORSRequestOrigin, "http://gooddomain.com")
+	r.Header.Set(CORSRequestMethod, "GET")
 	mux.ServeHTTP(w, r)
 	if http.StatusOK != w.Status {
 		t.Fatal(w.Status)
 	}
-	if "http://gooddomain.com" != w.Header().Get("Access-Control-Allow-Origin") {
-		t.Fatal(w.Header().Get("Access-Control-Allow-Origin"))
+	if "http://gooddomain.com" != w.Header().Get(CORSAllowOrigin) {
+		t.Fatal(w.Header().Get(CORSAllowOrigin))
 	}
 }

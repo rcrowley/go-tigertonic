@@ -7,7 +7,11 @@ import "net/http"
 // we may need to come up with something more robust than just dragging an
 // http.Header around
 
-const AllowOrigin string = "Access-Control-Allow-Origin"
+const CORSRequestOrigin string = "Origin"
+const CORSRequestMethod string = "Access-Control-Request-Method"
+
+const CORSAllowOrigin string = "Access-Control-Allow-Origin"
+const CORSAllowMethods string = "Access-Control-Allow-Methods"
 
 type CORSHandler struct {
 	http.Handler
@@ -23,7 +27,7 @@ func NewCORSBuilder() *CORSBuilder {
 }
 
 func (self *CORSBuilder) SetAllowedOrigin(origin string) *CORSBuilder {
-	self.Header.Set(AllowOrigin, origin)
+	self.Header.Set(CORSAllowOrigin, origin)
 	return self
 }
 

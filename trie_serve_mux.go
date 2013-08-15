@@ -135,14 +135,14 @@ func (h methodNotAllowedHandler) ServeHTTP(w http.ResponseWriter, r *http.Reques
 	sort.Strings(methods)
 	w.Header().Set("Allow", strings.Join(methods, ", "))
 	if "OPTIONS" == r.Method {
-		if method := r.Header.Get("Access-Control-Request-Method"); method != "" {
-			w.Header().Set("Access-Control-Allow-Methods", strings.Join(methods, ", "))
-			if r.Header.Get("Origin") != "" {
+		if method := r.Header.Get(CORSRequestMethod); method != "" {
+			w.Header().Set(CORSAllowMethods, strings.Join(methods, ", "))
+			if r.Header.Get(CORSRequestOrigin) != "" {
 				allowed_origin := ""
 				if cors, ok := h.mux.methods[method].(*CORSHandler); ok == true {
-					if origins, ok := (*cors.Header)["Access-Control-Allow-Origin"]; ok {
+					if origins, ok := (*cors.Header)[CORSAllowOrigin]; ok {
 						for _, origin := range origins {
-							if origin == r.Header.Get("Origin") || origin == "*" {
+							if origin == r.Header.Get(CORSRequestOrigin) || origin == "*" {
 								allowed_origin = origin
 								break
 							}
@@ -153,7 +153,7 @@ func (h methodNotAllowedHandler) ServeHTTP(w http.ResponseWriter, r *http.Reques
 				if allowed_origin == "" {
 					allowed_origin = "null"
 				}
-				w.Header().Set("Access-Control-Allow-Origin", allowed_origin)
+				w.Header().Set(CORSAllowOrigin, allowed_origin)
 			}
 		}
 		if acceptJSON(r) {
