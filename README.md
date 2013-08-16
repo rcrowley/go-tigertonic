@@ -46,7 +46,17 @@ Wrap an `http.Handler` in `tigertonic.Logged` to have the request and response h
 `tigertonic.Counted` and `tigertonic.Timed`
 -------------------------------------------
 
-Wrap an `http.Handler` in `Counted` or `Timed` to have the request counted or timed with [`go-metrics`](https://github.com/rcrowley/go-metrics).
+Wrap an `http.Handler` in `tigertonic.Counted` or `tigertonic.Timed` to have the request counted or timed with [`go-metrics`](https://github.com/rcrowley/go-metrics).
+
+`tigertonic.First`
+------------------
+
+Call `tigertonic.First` with a variadic slice of `http.Handler`s.  It will call `ServeHTTP` on each in succession until the first one that calls `w.WriteHeader`.
+
+`tigertonic.If`
+---------------
+
+`tigertonic.If` expesses the most common use of `tigertonic.First` more naturally.  Call `tigertonic.If` with a `func(*http.Request) error` and an `http.Handler`.  It will coneditionally call the handler unless the function returns an error.  In that case, the error is used to create a response.
 
 Usage
 -----
