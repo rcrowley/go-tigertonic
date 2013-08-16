@@ -103,7 +103,14 @@ mux.Handle("GET", "/stuff", tigertonic.Marshaled(tigertonic.Timed(myHandler, "my
 tigertonic.NewServer(":8000", tigertonic.Logged(mux, nil)).ListenAndServe()
 ```
 
-Ready for more?  See the full [example](https://github.com/rcrowley/go-tigertonic/tree/master/example).
+Ready for more?  See the full [example](https://github.com/rcrowley/go-tigertonic/tree/master/example).  Build it with `go build`, run it with `./example`, and test it out:
+
+```sh
+curl -H"Host: example.com" -sv "http://127.0.0.1:8000/1.0/stuff/ID"
+curl -H"Host: example.com" -X"POST" -d'{"id":"ID","stuff":"STUFF"}' -sv "http://127.0.0.1:8000/1.0/stuff"
+curl -H"Host: example.com" -X"POST" -d'{"id":"ID","stuff":"STUFF"}' -sv "http://127.0.0.1:8000/1.0/stuff/ID"
+curl -H"Host: example.com" -sv "http://127.0.0.1:8000/1.0/forbidden"
+```
 
 WTF?
 ----

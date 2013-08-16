@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"flag"
 	"fmt"
 	"github.com/rcrowley/go-metrics"
@@ -32,6 +33,14 @@ func init() {
 	mux.Handle("POST", "/stuff", tigertonic.Timed(tigertonic.Marshaled(create), "POST-stuff", nil))
 	mux.Handle("GET", "/stuff/{id}", tigertonic.Timed(tigertonic.Marshaled(get), "GET-stuff-id", nil))
 	mux.Handle("POST", "/stuff/{id}", tigertonic.Timed(tigertonic.Marshaled(update), "POST-stuff-id", nil))
+	mux.Handle("GET", "/forbidden", tigertonic.If(
+		func(*http.Request) error {
+			return tigertonic.Forbidden{errors.New("forbidden")}
+		},
+		tigertonic.Marshaled(func(*url.URL, http.Header, interface{}) (int, http.Header, interface{}, error) {
+			return http.StatusOK, nil, &MyResponse{}, nil
+		}),
+	))
 	nsMux = tigertonic.NewTrieServeMux()
 	nsMux.HandleNamespace("", mux)
 	nsMux.HandleNamespace("/1.0", mux)
