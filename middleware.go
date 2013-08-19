@@ -31,7 +31,7 @@ func (fh FirstHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 // unless the given function returns an error.  In that case, the error
 // is used to create a plaintext or JSON response as dictated by the Accept
 // header.
-func If(f func(*http.Request) error, h http.Handler) FirstHandler {
+func If(f func(*http.Request) (http.Header, error), h http.Handler) FirstHandler {
 	return First(ifHandler(f), h)
 }
 
@@ -45,10 +45,15 @@ func (w *firstResponseWriter) WriteHeader(status int) {
 	w.ResponseWriter.WriteHeader(status)
 }
 
-type ifHandler func(*http.Request) error
+type ifHandler func(*http.Request) (http.Header, error)
 
 func (ih ifHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	err := ih(r)
+	header, err := ih(r)
+	for name, values := range header {
+		for _, value := range values {
+			w.Header().Set(name, value)
+		}
+	}
 	if nil == err {
 		return
 	}

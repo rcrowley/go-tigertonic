@@ -12,6 +12,7 @@ func TestHTTPBasicAuthAuthorized(t *testing.T) {
 	r.SetBasicAuth("username", "password")
 	HTTPBasicAuth(
 		map[string]string{"username": "password"},
+		"Tiger Tonic",
 		NotFoundHandler(),
 	).ServeHTTP(w, r)
 	if http.StatusNotFound != w.Status {
@@ -25,6 +26,7 @@ func TestHTTPBasicAuthBase64Error(t *testing.T) {
 	r.Header.Set("Authorization", "Basic not-base64")
 	HTTPBasicAuth(
 		map[string]string{"username": "password"},
+		"Tiger Tonic",
 		NotFoundHandler(),
 	).ServeHTTP(w, r)
 	if http.StatusUnauthorized != w.Status {
@@ -38,6 +40,7 @@ func TestHTTPBasicAuthMalformed(t *testing.T) {
 	r.Header.Set("Authorization", "Basic "+base64.StdEncoding.EncodeToString([]byte("username")))
 	HTTPBasicAuth(
 		map[string]string{"username": "password"},
+		"Tiger Tonic",
 		NotFoundHandler(),
 	).ServeHTTP(w, r)
 	if http.StatusUnauthorized != w.Status {
@@ -51,6 +54,7 @@ func TestHTTPBasicAuthUnauthorized(t *testing.T) {
 	r.SetBasicAuth("username", "wrong-password")
 	HTTPBasicAuth(
 		map[string]string{"username": "password"},
+		"Tiger Tonic",
 		NotFoundHandler(),
 	).ServeHTTP(w, r)
 	if http.StatusUnauthorized != w.Status {
@@ -63,6 +67,7 @@ func TestHTTPBasicAuthUnspecified(t *testing.T) {
 	r, _ := http.NewRequest("GET", "http://example.com/", nil)
 	HTTPBasicAuth(
 		map[string]string{"username": "password"},
+		"Tiger Tonic",
 		NotFoundHandler(),
 	).ServeHTTP(w, r)
 	if http.StatusUnauthorized != w.Status {

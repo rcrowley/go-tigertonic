@@ -45,19 +45,24 @@ func TestFirst4(t *testing.T) {
 func TestIfFalse(t *testing.T) {
 	w := &testResponseWriter{}
 	r, _ := http.NewRequest("GET", "http://example.com/", nil)
-	If(func(r *http.Request) error {
-		return Unauthorized{errors.New("Unauthorized")}
+	If(func(r *http.Request) (http.Header, error) {
+		return http.Header{
+			"WWW-Authenticate": []string{"Basic realm=\"Tiger Tonic\""},
+		}, Unauthorized{errors.New("Unauthorized")}
 	}, NotFoundHandler()).ServeHTTP(w, r)
 	if http.StatusUnauthorized != w.Status {
 		t.Fatal(w.Status)
+	}
+	if wwwAuthenticate := w.Header().Get("WWW-Authenticate"); "Basic realm=\"Tiger Tonic\"" != wwwAuthenticate {
+		t.Fatal(w.Header())
 	}
 }
 
 func TestIfTrue(t *testing.T) {
 	w := &testResponseWriter{}
 	r, _ := http.NewRequest("GET", "http://example.com/", nil)
-	If(func(r *http.Request) error {
-		return nil
+	If(func(r *http.Request) (http.Header, error) {
+		return nil, nil
 	}, NotFoundHandler()).ServeHTTP(w, r)
 	if http.StatusNotFound != w.Status {
 		t.Fatal(w.Status)

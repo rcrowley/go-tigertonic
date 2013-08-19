@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/base64"
 	"errors"
+	"fmt"
 	"net/http"
 )
 
@@ -11,25 +12,26 @@ import (
 // http.Handler if the request includes and Authorization header with a
 // username and password that appear in the map of credentials.  Otherwise,
 // respond 401 Unauthorized.
-//
-// TODO Respond with an appropriate WWW-Authenticate header.
-func HTTPBasicAuth(credentials map[string]string, h http.Handler) FirstHandler {
-	return If(func(r *http.Request) error {
+func HTTPBasicAuth(credentials map[string]string, realm string, h http.Handler) FirstHandler {
+	header := http.Header{
+		"WWW-Authenticate": []string{fmt.Sprintf("Basic realm=\"%s\"", realm)},
+	}
+	return If(func(r *http.Request) (http.Header, error) {
 		auth := r.Header.Get("Authorization")
 		if 6 > len(auth) || "Basic " != auth[:6] {
-			return Unauthorized{errors.New("no HTTP Basic auth specified")}
+			return header, Unauthorized{errors.New("no HTTP Basic auth specified")}
 		}
 		buf, err := base64.StdEncoding.DecodeString(auth[6:])
 		if nil != err {
-			return Unauthorized{err}
+			return header, Unauthorized{err}
 		}
 		i := bytes.IndexByte(buf, ':')
 		if -1 == i {
-			return Unauthorized{errors.New("malformed HTTP Basic auth specified")}
+			return header, Unauthorized{errors.New("malformed HTTP Basic auth specified")}
 		}
 		if password, ok := credentials[string(buf[:i])]; !ok || password != string(buf[i+1:]) {
-			return Unauthorized{errors.New("unauthorized")}
+			return header, Unauthorized{errors.New("unauthorized")}
 		}
-		return nil
+		return nil, nil
 	}, h)
 }
