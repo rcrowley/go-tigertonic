@@ -32,6 +32,8 @@ func TestOPTIONS(t *testing.T) {
 	mux.HandleFunc("POST", "/bar", func(w http.ResponseWriter, r *http.Request) {})
 	w := &testResponseWriter{}
 	r, _ := http.NewRequest("OPTIONS", "http://example.com/foo", nil)
+	r.Header.Set(CORSRequestMethod, "GET")
+
 	mux.ServeHTTP(w, r)
 	if http.StatusOK != w.Status {
 		t.Fatal(w.Status)
@@ -39,6 +41,10 @@ func TestOPTIONS(t *testing.T) {
 	if "GET, HEAD, OPTIONS" != w.Header().Get("Allow") {
 		t.Fatal(w.Header().Get("Allow"))
 	}
+	if "GET, HEAD, OPTIONS" != w.Header().Get(CORSAllowMethods) {
+		t.Fatal(w.Header().Get("Allow"))
+	}
+
 	w = &testResponseWriter{}
 	r, _ = http.NewRequest("OPTIONS", "http://example.com/bar", nil)
 	mux.ServeHTTP(w, r)

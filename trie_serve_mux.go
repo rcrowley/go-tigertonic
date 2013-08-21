@@ -135,6 +135,20 @@ func (h methodNotAllowedHandler) ServeHTTP(w http.ResponseWriter, r *http.Reques
 	sort.Strings(methods)
 	w.Header().Set("Allow", strings.Join(methods, ", "))
 	if "OPTIONS" == r.Method {
+		if method := r.Header.Get(CORSRequestMethod); method != "" {
+			w.Header().Set(CORSAllowMethods, strings.Join(methods, ", "))
+			if requestOrigin := r.Header.Get(CORSRequestOrigin); requestOrigin != "" {
+				allowedOrigin := ""
+				if cors, ok := h.mux.methods[method].(*CORSHandler); ok {
+					allowedOrigin = cors.getResponseOrigin(requestOrigin)
+				}
+
+				if allowedOrigin == "" {
+					allowedOrigin = "null"
+				}
+				w.Header().Set(CORSAllowOrigin, allowedOrigin)
+			}
+		}
 		if acceptJSON(r) {
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusOK)
