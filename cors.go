@@ -2,10 +2,10 @@ package tigertonic
 
 import "net/http"
 
-// TODO: handle other kinds of CORS headers. Early indication is that some kind
-// of "interactive" way of handling certain header types will be required, so
-// we may need to come up with something more robust than just dragging an
-// http.Header around
+// BUG(mihasya): currently only handles Origin-related CORS headers. Early
+// indication is that logic will be required for handling certain header types
+// (the credential-related ones in particular) so we may need to come up with
+// something more robust than just dragging an http.Header around
 
 const CORSRequestOrigin string = "Origin"
 const CORSRequestMethod string = "Access-Control-Request-Method"
@@ -13,6 +13,9 @@ const CORSRequestMethod string = "Access-Control-Request-Method"
 const CORSAllowOrigin string = "Access-Control-Allow-Origin"
 const CORSAllowMethods string = "Access-Control-Allow-Methods"
 
+// CORSHandler wraps an http.Handler while correctly handling CORS related
+// functionality, such as Origin headers. It also allows tigertonic core to
+// correctly respond to OPTIONS headers for CORS-enabled endpoints
 type CORSHandler struct {
 	http.Handler
 	Header http.Header
@@ -34,6 +37,9 @@ func (self *CORSHandler) getResponseOrigin(requestOrigin string) string {
 	return "null"
 }
 
+// CRSBuilder facilitates the application of the same set of CORS rules to a
+// number of endpoints. One would use CORSBuilder.Build() the same way one
+// might wrap a handler in a call to Timed() or Logged().
 type CORSBuilder struct {
 	http.Header
 }
@@ -42,6 +48,7 @@ func NewCORSBuilder() *CORSBuilder {
 	return &CORSBuilder{http.Header{}}
 }
 
+// SetAllowedOrigin sets the domain for which cross-origin requests are allowed
 func (self *CORSBuilder) SetAllowedOrigin(origin string) *CORSBuilder {
 	self.Header.Set(CORSAllowOrigin, origin)
 	return self
