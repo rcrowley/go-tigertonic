@@ -41,6 +41,13 @@ func init() {
 			return http.StatusOK, nil, &MyResponse{}, nil
 		}),
 	))
+	mux.Handle("GET", "/authorized", tigertonic.HTTPBasicAuth(
+		map[string]string{"username": "password"},
+		"Tiger Tonic",
+		tigertonic.Marshaled(func(*url.URL, http.Header, interface{}) (int, http.Header, interface{}, error) {
+			return http.StatusOK, nil, &MyResponse{}, nil
+		}),
+	))
 	nsMux = tigertonic.NewTrieServeMux()
 	nsMux.HandleNamespace("", mux)
 	nsMux.HandleNamespace("/1.0", mux)
