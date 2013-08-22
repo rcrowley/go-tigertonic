@@ -29,18 +29,21 @@ func init() {
 	}
 	log.SetFlags(log.Ltime | log.Lmicroseconds | log.Lshortfile)
 
+	cors := tigertonic.NewCORSBuilder().SetAllowedOrigin("*")
+
+	// only allow GETs from other Origins
 	mux = tigertonic.NewTrieServeMux()
 	mux.Handle("POST", "/stuff", tigertonic.Timed(tigertonic.Marshaled(create), "POST-stuff", nil))
-	mux.Handle("GET", "/stuff/{id}", tigertonic.Timed(tigertonic.Marshaled(get), "GET-stuff-id", nil))
+	mux.Handle("GET", "/stuff/{id}", cors.Build(tigertonic.Timed(tigertonic.Marshaled(get), "GET-stuff-id", nil)))
 	mux.Handle("POST", "/stuff/{id}", tigertonic.Timed(tigertonic.Marshaled(update), "POST-stuff-id", nil))
-	mux.Handle("GET", "/forbidden", tigertonic.If(
+	mux.Handle("GET", "/forbidden", cors.Build(tigertonic.If(
 		func(*http.Request) (http.Header, error) {
 			return nil, tigertonic.Forbidden{errors.New("forbidden")}
 		},
 		tigertonic.Marshaled(func(*url.URL, http.Header, interface{}) (int, http.Header, interface{}, error) {
 			return http.StatusOK, nil, &MyResponse{}, nil
 		}),
-	))
+	)))
 	mux.Handle("GET", "/authorized", tigertonic.HTTPBasicAuth(
 		map[string]string{"username": "password"},
 		"Tiger Tonic",

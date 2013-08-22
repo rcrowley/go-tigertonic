@@ -63,6 +63,13 @@ Call `tigertonic.First` with a variadic slice of `http.Handler`s.  It will call 
 
 Wrap an `http.Handler` in `tigertonic.HTTPBasicAuth`, providing a `map[string]string` of authorized usernames to passwords, to require the request include a valid `Authorization` header.
 
+`tigertonic.CORSHandler` and `tigertonic.CORSBuilder`
+-----------------------------------------------------
+
+Wrap an `http.Handler` in `tigertonic.CORSHandler` (using `CORSBuilder.Build()`)
+to inject CORS-related headers. Currently only `Origin` related headers (used
+for cross-origin browser requests) is supported.
+
 Usage
 -----
 
