@@ -68,6 +68,11 @@ Wrap an `http.Handler` in `tigertonic.HTTPBasicAuth`, providing a `map[string]st
 
 Wrap an `http.Handler` in `tigertonic.CORSHandler` (using `CORSBuilder.Build()`) to inject CORS-related headers. Currently only `Origin`-related headers (used for cross-origin browser requests) are supported.
 
+`tigertonic.Configure`
+----------------------
+
+Call `tigertonic.Configure` to read and unmarshal a JSON configuration file into a configuration structure of your own design.  This is mere convenience and what you do with it after is up to you.
+
 Usage
 -----
 
