@@ -2,22 +2,50 @@ package tigertonic
 
 import (
 	"encoding/json"
-	"io/ioutil"
+	"errors"
+	"fmt"
+	"os"
+	"path/filepath"
 )
 
-// Configure reads the given configuration file and unmarshals the JSON found
-// into the given configuration structure, which may be any Go type.
+// ConfigExt maps all known configuration file extensions to their
+// read-and-unmarshal functions.
+var ConfigExt = map[string]func(string, interface{}) error{
+	".json": ConfigureJSON,
+}
+
+// Configure delegates reading and unmarshaling of the given configuration
+// file to the appropriate function from ConfigExt.  For convenient use with
+// the flags package, an empty pathname is not considered an error.
 func Configure(pathname string, i interface{}) error {
 	if "" == pathname {
 		return nil
 	}
-	buf, err := ioutil.ReadFile(pathname)
+	ext := filepath.Ext(pathname)
+	if "" == ext {
+		return errors.New("configuration file must have an extention")
+	}
+	f, ok := ConfigExt[ext]
+	if !ok {
+		return fmt.Errorf(
+			"configuration file extension \"%s\" not recognized",
+			ext,
+		)
+	}
+	return f(pathname, i)
+}
+
+// ConfigureJSON reads the given configuration file and unmarshals the JSON
+// found into the given configuration structure.  For convenient use with
+// the flags package, an empty pathname is not considered an error.
+func ConfigureJSON(pathname string, i interface{}) error {
+	if "" == pathname {
+		return nil
+	}
+	f, err := os.Open(pathname)
 	if nil != err {
 		return err
 	}
-	err = json.Unmarshal(buf, i)
-	if nil != err {
-		return err
-	}
-	return nil
+	defer f.Close()
+	return json.NewDecoder(f).Decode(i)
 }
