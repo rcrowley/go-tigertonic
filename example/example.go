@@ -22,6 +22,10 @@ var (
 	mux, nsMux *tigertonic.TrieServeMux
 )
 
+type context struct {
+	Username string
+}
+
 func init() {
 	flag.Usage = func() {
 		fmt.Fprintln(os.Stderr, "Usage: example [-cert=<cert>] [-key=<key>] [-listen=<listen>]")
@@ -29,13 +33,36 @@ func init() {
 	}
 	log.SetFlags(log.Ltime | log.Lmicroseconds | log.Lshortfile)
 
+	// We'll use this CORSBuilder to set Access-Control-Allow-Origin headers
+	// on certain endpoints.
 	cors := tigertonic.NewCORSBuilder().SetAllowedOrigin("*")
 
-	// only allow GETs from other Origins
+	// Register endpoints defined in top-level functions below with example
+	// uses of Timed go-metrics wrapper.
 	mux = tigertonic.NewTrieServeMux()
-	mux.Handle("POST", "/stuff", tigertonic.Timed(tigertonic.Marshaled(create), "POST-stuff", nil))
-	mux.Handle("GET", "/stuff/{id}", cors.Build(tigertonic.Timed(tigertonic.Marshaled(get), "GET-stuff-id", nil)))
-	mux.Handle("POST", "/stuff/{id}", tigertonic.Timed(tigertonic.Marshaled(update), "POST-stuff-id", nil))
+	mux.Handle(
+		"POST",
+		"/stuff",
+		tigertonic.Timed(tigertonic.Marshaled(create), "POST-stuff", nil),
+	)
+	mux.Handle(
+		"GET",
+		"/stuff/{id}",
+		cors.Build(tigertonic.Timed(
+			tigertonic.Marshaled(get),
+			"GET-stuff-id",
+			nil,
+		)),
+	)
+	mux.Handle(
+		"POST",
+		"/stuff/{id}",
+		tigertonic.Timed(tigertonic.Marshaled(update), "POST-stuff-id", nil),
+	)
+
+	// Example use of the If middleware to forbid access to certain endpoints
+	// under certain conditions (certain conditions being all conditions in
+	// this example).
 	mux.Handle("GET", "/forbidden", cors.Build(tigertonic.If(
 		func(*http.Request) (http.Header, error) {
 			return nil, tigertonic.Forbidden{errors.New("forbidden")}
@@ -44,6 +71,9 @@ func init() {
 			return http.StatusOK, nil, &MyResponse{}, nil
 		}),
 	)))
+
+	// Example use of the HTTPBasicAuth middleware to require a username and
+	// password for access to certain endpoints.
 	mux.Handle("GET", "/authorized", tigertonic.HTTPBasicAuth(
 		map[string]string{"username": "password"},
 		"Tiger Tonic",
@@ -51,19 +81,57 @@ func init() {
 			return http.StatusOK, nil, &MyResponse{}, nil
 		}),
 	))
+
+	// Example use of the First middleware and Context to share per-request
+	// state across handlers.  The context type is set in WithContext below.
+	mux.Handle("GET", "/context", tigertonic.If(
+		func(r *http.Request) (http.Header, error) {
+			tigertonic.Context(r).(*context).Username = "rcrowley"
+			return nil, nil
+		},
+		tigertonic.Marshaled(func(u *url.URL, h http.Header, _ interface{}, c *context) (int, http.Header, interface{}, error) {
+			return http.StatusOK, nil, &MyResponse{ID: c.Username}, nil
+		}),
+	))
+
+	// Example use of namespaces.
 	nsMux = tigertonic.NewTrieServeMux()
 	nsMux.HandleNamespace("", mux)
 	nsMux.HandleNamespace("/1.0", mux)
+
+	// Example use of virtual hosts.
 	hMux = tigertonic.NewHostServeMux()
 	hMux.Handle("example.com", nsMux)
+
 }
 
 func main() {
 	flag.Parse()
-	go metrics.Log(metrics.DefaultRegistry, 60e9, log.New(os.Stderr, "metrics ", log.Lmicroseconds))
-	server := tigertonic.NewServer(*listen, tigertonic.Logged(hMux, func(s string) string {
-		return strings.Replace(s, "SECRET", "REDACTED", -1)
-	}))
+
+	// Example use of go-metrics.
+	go metrics.Log(
+		metrics.DefaultRegistry,
+		60e9,
+		log.New(os.Stderr, "metrics ", log.Lmicroseconds),
+	)
+
+	server := tigertonic.NewServer(
+		*listen,
+
+		// Example use of request logging, redacting the word SECRET wherever
+		// it appears.
+		tigertonic.Logged(
+
+			// Example use of WithContext, which is required in order to use
+			// Context within any handlers.  The second argument is a zero
+			// value of the type to be used for all actual request contexts.
+			tigertonic.WithContext(hMux, context{}),
+
+			func(s string) string {
+				return strings.Replace(s, "SECRET", "REDACTED", -1)
+			},
+		),
+	)
 	var err error
 	if "" != *cert && "" != *key {
 		err = server.ListenAndServeTLS(*cert, *key)

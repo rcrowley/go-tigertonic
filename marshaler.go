@@ -30,8 +30,8 @@ func Marshaled(i interface{}) *Marshaler {
 	if reflect.Func != t.Kind() {
 		panic(NewMarshalerError("kind was %v, not Func", t.Kind()))
 	}
-	if 3 != t.NumIn() {
-		panic(NewMarshalerError("input arity was %v, not 3", t.NumIn()))
+	if 3 != t.NumIn() && 4 != t.NumIn() {
+		panic(NewMarshalerError("input arity was %v, not 3 or 4", t.NumIn()))
 	}
 	if "*url.URL" != t.In(0).String() {
 		panic(NewMarshalerError(
@@ -137,11 +137,21 @@ func (m *Marshaler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			r.Method,
 		)
 	}
-	out := m.v.Call([]reflect.Value{
-		reflect.ValueOf(r.URL),
-		reflect.ValueOf(r.Header),
-		rq,
-	})
+	var out []reflect.Value
+	if 3 == m.v.Type().NumIn() {
+		out = m.v.Call([]reflect.Value{
+			reflect.ValueOf(r.URL),
+			reflect.ValueOf(r.Header),
+			rq,
+		})
+	} else {
+		out = m.v.Call([]reflect.Value{
+			reflect.ValueOf(r.URL),
+			reflect.ValueOf(r.Header),
+			rq,
+			reflect.ValueOf(Context(r)),
+		})
+	}
 	status := int(out[0].Int())
 	header := out[1].Interface().(http.Header)
 	rs := out[2].Interface().(Response)
