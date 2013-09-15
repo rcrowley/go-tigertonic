@@ -17,21 +17,34 @@ func HTTPBasicAuth(credentials map[string]string, realm string, h http.Handler) 
 		"WWW-Authenticate": []string{fmt.Sprintf("Basic realm=\"%s\"", realm)},
 	}
 	return If(func(r *http.Request) (http.Header, error) {
-		auth := r.Header.Get("Authorization")
-		if 6 > len(auth) || "Basic " != auth[:6] {
-			return header, Unauthorized{errors.New("no HTTP Basic auth specified")}
-		}
-		buf, err := base64.StdEncoding.DecodeString(auth[6:])
+		username, password, err := httpBasicAuth(r.Header)
 		if nil != err {
-			return header, Unauthorized{err}
+			return header, err
 		}
-		i := bytes.IndexByte(buf, ':')
-		if -1 == i {
-			return header, Unauthorized{errors.New("malformed HTTP Basic auth specified")}
-		}
-		if password, ok := credentials[string(buf[:i])]; !ok || password != string(buf[i+1:]) {
+		if p, ok := credentials[username]; !ok || p != password {
 			return header, Unauthorized{errors.New("unauthorized")}
 		}
 		return nil, nil
 	}, h)
+}
+
+func httpBasicAuth(h http.Header) (username, password string, err error) {
+	authorization := h.Get("Authorization")
+	if 6 > len(authorization) || "Basic " != authorization[:6] {
+		err = Unauthorized{errors.New("no HTTP Basic auth specified")}
+		return
+	}
+	buf, err := base64.StdEncoding.DecodeString(authorization[6:])
+	if nil != err {
+		err = Unauthorized{err}
+		return
+	}
+	i := bytes.IndexByte(buf, ':')
+	if -1 == i {
+		err = Unauthorized{errors.New("malformed HTTP Basic auth specified")}
+		return
+	}
+	username = string(buf[:i])
+	password = string(buf[i+1:])
+	return
 }

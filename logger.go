@@ -6,7 +6,56 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 )
+
+// ApacheLogger is an http.Handler that logs requests and responses in the
+// Apache combined log format.
+type ApacheLogger struct {
+	*log.Logger
+	handler http.Handler
+}
+
+// ApacheLogged returns an http.Handler that logs requests and responses in
+// the Apache combined log format.
+func ApacheLogged(handler http.Handler) *ApacheLogger {
+	return &ApacheLogger{
+		Logger:   log.New(os.Stdout, "", 0),
+		handler:  handler,
+	}
+}
+
+// ServeHTTP wraps the http.Request and http.ResponseWriter to log to standard
+// output and pass through to the underlying http.Handler.
+func (al *ApacheLogger) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	aw := &apacheResponseWriter{ResponseWriter: w}
+	al.handler.ServeHTTP(aw, r)
+	referer := r.Header.Get("Referer")
+	if "" == referer {
+		referer = "-"
+	}
+	userAgent := r.Header.Get("User-Agent")
+	if "" == userAgent {
+		userAgent = "-"
+	}
+	username, _, _ := httpBasicAuth(r.Header)
+	if "" == username {
+		username = "-"
+	}
+	al.Printf(
+		"%s %s %s [%v] \"%s %s\" %d %d \"%s\" \"%s\"\n",
+		r.RemoteAddr,
+		"-", // We're not supporting identd, sorry.
+		username,
+		time.Now(),
+		r.Method,
+		r.RequestURI,
+		aw.Status,
+		aw.Size,
+		referer,
+		userAgent,
+	)
+}
 
 // Logger is an http.Handler that logs requests and responses, complete with
 // paths, statuses, headers, and bodies.  Sensitive information may be redacted
@@ -82,6 +131,22 @@ type RequestID string
 // NewRequestID returns a new 16-character random RequestID.
 func NewRequestID() RequestID {
 	return RequestID(RandomBase62Bytes(16))
+}
+
+type apacheResponseWriter struct {
+	http.ResponseWriter
+	Size int
+	Status int
+}
+
+func (w *apacheResponseWriter) Write(p []byte) (int, error) {
+	w.Size += len(p)
+	return w.ResponseWriter.Write(p)
+}
+
+func (w *apacheResponseWriter) WriteHeader(status int) {
+	w.Status = status
+	w.ResponseWriter.WriteHeader(status)
 }
 
 type readCloser struct {
