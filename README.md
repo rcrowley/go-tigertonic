@@ -5,6 +5,8 @@ A Go framework for building JSON web services inspired by [Dropwizard](http://dr
 
 Like the Go language itself, Tiger Tonic strives to keep features orthogonal.  It defers what it can to the Go standard library and a few other packages.
 
+Documentation: <http://godoc.org/github.com/rcrowley/go-tigertonic>
+
 `tigertonic.TrieServeMux`
 -------------------------
 
