@@ -20,8 +20,8 @@ type ApacheLogger struct {
 // the Apache combined log format.
 func ApacheLogged(handler http.Handler) *ApacheLogger {
 	return &ApacheLogger{
-		Logger:   log.New(os.Stdout, "", 0),
-		handler:  handler,
+		Logger:  log.New(os.Stdout, "", 0),
+		handler: handler,
 	}
 }
 
@@ -135,7 +135,7 @@ func NewRequestID() RequestID {
 
 type apacheResponseWriter struct {
 	http.ResponseWriter
-	Size int
+	Size   int
 	Status int
 }
 
