@@ -13,8 +13,8 @@ func NewServer(addr string, handler http.Handler) *Server {
 		Addr:           addr,
 		Handler:        &server{handler},
 		MaxHeaderBytes: 4096,
-		ReadTimeout:    1e9,
-		WriteTimeout:   1e9,
+		ReadTimeout:    60e9, // These are absolute times which must be
+		WriteTimeout:   60e9, // longer than the longest {up,down}load.
 	}}
 }
 
