@@ -75,6 +75,11 @@ Wrap an `http.Handler` in `tigertonic.CORSHandler` (using `CORSBuilder.Build()`)
 
 Call `tigertonic.Configure` to read and unmarshal a JSON configuration file into a configuration structure of your own design.  This is mere convenience and what you do with it after is up to you.
 
+`tigertonic.WithContext` and `tigertonic.Context`
+-------------------------------------------------
+
+Wrap an `http.Handler` and a zero value of any non-interface type in `tigertonic.WithContext` to enable per-request context.  Each request may call `tigertonic.Context` with the `*http.Request` in progress to get a pointer to the context which is of the type passed to `tigertonic.WithContext`.
+
 Usage
 -----
 
