@@ -16,6 +16,7 @@ import (
 var (
 	cert   = flag.String("cert", "", "certificate pathname")
 	key    = flag.String("key", "", "private key pathname")
+	config = flag.String("config", "", "pathname of JSON configuration file")
 	listen = flag.String("listen", "127.0.0.1:8000", "listen address")
 
 	hMux       tigertonic.HostServeMux
@@ -24,14 +25,11 @@ var (
 
 func init() {
 	flag.Usage = func() {
-		fmt.Fprintln(os.Stderr, "Usage: example [-cert=<cert>] [-key=<key>] [-listen=<listen>]")
+		fmt.Fprintln(os.Stderr, "Usage: example [-cert=<cert>] [-key=<key>] [-config=<config>] [-listen=<listen>]")
 		flag.PrintDefaults()
 	}
 	log.SetFlags(log.Ltime | log.Lmicroseconds | log.Lshortfile)
-
 	cors := tigertonic.NewCORSBuilder().SetAllowedOrigin("*")
-
-	// only allow GETs from other Origins
 	mux = tigertonic.NewTrieServeMux()
 	mux.Handle("POST", "/stuff", tigertonic.Timed(tigertonic.Marshaled(create), "POST-stuff", nil))
 	mux.Handle("GET", "/stuff/{id}", cors.Build(tigertonic.Timed(tigertonic.Marshaled(get), "GET-stuff-id", nil)))
@@ -61,6 +59,10 @@ func init() {
 func main() {
 	flag.Parse()
 	go metrics.Log(metrics.DefaultRegistry, 60e9, log.New(os.Stderr, "metrics ", log.Lmicroseconds))
+	c := &Config{}
+	if err := tigertonic.Configure(*config, c); nil != err {
+		log.Fatalln(err)
+	}
 	server := tigertonic.NewServer(*listen, tigertonic.Logged(hMux, func(s string) string {
 		return strings.Replace(s, "SECRET", "REDACTED", -1)
 	}))
