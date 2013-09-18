@@ -6,6 +6,8 @@ import (
 	"net/url"
 )
 
+// Header augments an optional existing http.Header with Accept and
+// Content-Type headers as required by Tiger Tonic.
 func Header(h http.Header) http.Header {
 	h0 := make(http.Header)
 	h0.Add("Accept", "application/json")
@@ -20,10 +22,14 @@ func Header(h http.Header) http.Header {
 	return h0
 }
 
+// TestableHandler wraps the Handler method from http.ServeMux to make it
+// easier to detect in tests.
 type TestableHandler interface {
 	Handler(*http.Request) (http.Handler, string)
 }
 
+// URL constructs a url.URL for use in tests and ensures it's routed by the
+// given TestableHandler.
 func URL(h TestableHandler, method, rawurl string) *url.URL {
 	u, err := url.ParseRequestURI(rawurl)
 	if nil != err {
