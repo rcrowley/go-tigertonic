@@ -10,7 +10,7 @@ Documentation: <http://godoc.org/github.com/rcrowley/go-tigertonic>
 `tigertonic.TrieServeMux`
 -------------------------
 
-HTTP routing in the Go standard library is pretty anemic.  Enter `tigertonic.TrieServeMux`.  It accepts an HTTP method, a URL pattern, and an `http.Handler` or an `http.HandlerFunc`.  Components in the URL pattern wrapped in `{` and `}` are wildcards: their values are added to the URL as <code>u.Query().Get("<em>name</em>")</code>.
+HTTP routing in the Go standard library is pretty anemic.  Enter `tigertonic.TrieServeMux`.  It accepts an HTTP method, a URL pattern, and an `http.Handler` or an `http.HandlerFunc`.  Components in the URL pattern wrapped in curly braces - `{` and `}` - are wildcards: their values are added to the URL as <code>u.Query().Get("<em>name</em>")</code>.
 
 `HandleNamespace` is like `Handle` but additionally strips the namespace from the URL, making API versioning, multitenant services, and relative links easier to manage.
 
@@ -45,7 +45,7 @@ Alternatively, you can return a valid status as the first output parameter and a
 
 Wrap an `http.Handler` in `tigertonic.Logged` to have the request and response headers and bodies logged to standard output.  The second argument is an optional `func(string) string` called as requests and responses are logged to give the caller the opportunity to redact sensitive information from log entries.
 
-Wrap an `http.Handler` in `tigertonic.ApacheLogged` to have the request and response logged in the more traditional Apache combinded log format.
+Wrap an `http.Handler` in `tigertonic.ApacheLogged` to have the request and response logged in the more traditional Apache combined log format.
 
 `tigertonic.Counted` and `tigertonic.Timed`
 -------------------------------------------
@@ -60,7 +60,7 @@ Call `tigertonic.First` with a variadic slice of `http.Handler`s.  It will call 
 `tigertonic.If`
 ---------------
 
-`tigertonic.If` expesses the most common use of `tigertonic.First` more naturally.  Call `tigertonic.If` with a `func(*http.Request) (http.Header, error)` and an `http.Handler`.  It will coneditionally call the handler unless the function returns an error.  In that case, the error is used to create a response.
+`tigertonic.If` expesses the most common use of `tigertonic.First` more naturally.  Call `tigertonic.If` with a `func(*http.Request) (http.Header, error)` and an `http.Handler`.  It will conditionally call the handler unless the function returns an error.  In that case, the error is used to create a response.
 
 `tigertonic.HTTPBasicAuth`
 --------------------------
