@@ -60,7 +60,7 @@ Call `tigertonic.First` with a variadic slice of `http.Handler`s.  It will call 
 `tigertonic.If`
 ---------------
 
-`tigertonic.If` expesses the most common use of `tigertonic.First` more naturally.  Call `tigertonic.If` with a `func(*http.Request) (http.Header, error)` and an `http.Handler`.  It will conditionally call the handler unless the function returns an error.  In that case, the error is used to create a response.
+`tigertonic.If` expresses the most common use of `tigertonic.First` more naturally.  Call `tigertonic.If` with a `func(*http.Request) (http.Header, error)` and an `http.Handler`.  It will conditionally call the handler unless the function returns an error.  In that case, the error is used to create a response.
 
 `tigertonic.HTTPBasicAuth`
 --------------------------
