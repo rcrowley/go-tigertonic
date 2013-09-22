@@ -2,12 +2,14 @@ package main
 
 import (
 	"errors"
+	_ "expvar" // Imported for side-effect of handling /debug/vars.
 	"flag"
 	"fmt"
 	"github.com/rcrowley/go-metrics"
 	"github.com/rcrowley/go-tigertonic"
 	"log"
 	"net/http"
+	_ "net/http/pprof" // Imported for side-effect of handling /debug/pprof.
 	"net/url"
 	"os"
 	"strings"
@@ -103,6 +105,11 @@ func init() {
 	// Example use of virtual hosts.
 	hMux = tigertonic.NewHostServeMux()
 	hMux.Handle("example.com", nsMux)
+
+	// Register http.DefaultServeMux on a subdomain for access to
+	// standard library features such as /debug/pprof and /debug/vars
+	// as imported at the top of this file.
+	hMux.Handle("go.example.com", http.DefaultServeMux)
 
 }
 
