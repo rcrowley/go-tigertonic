@@ -143,6 +143,7 @@ Dropwizard was named after <http://gunshowcomic.com/316> so Tiger Tonic was name
 
 If Tiger Tonic isn't your cup of tea, perhaps one of these fine tools suits you:
 
+* <http://beego.me>
 * <http://robfig.github.io/revel/>
 * <https://code.google.com/p/gorest/>
 * <https://github.com/bmizerany/pat>
