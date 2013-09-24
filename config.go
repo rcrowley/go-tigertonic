@@ -23,7 +23,7 @@ func Configure(pathname string, i interface{}) error {
 	}
 	ext := filepath.Ext(pathname)
 	if "" == ext {
-		return errors.New("configuration file must have an extention")
+		return errors.New("configuration file must have an extension")
 	}
 	f, ok := ConfigExt[ext]
 	if !ok {
