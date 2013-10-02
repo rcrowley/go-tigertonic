@@ -231,6 +231,17 @@ func TestBody(t *testing.T) {
 	}
 }
 
+func TestEmptyBody(t *testing.T) {
+	w := &testResponseWriter{}
+	r, _ := http.NewRequest("GET", "http://example.com/foo", nil)
+	Marshaled(func(*url.URL, http.Header, interface{}) (int, http.Header, interface{}, error) {
+		return http.StatusOK, nil, nil, nil
+	}).ServeHTTP(w, r)
+	if "" != w.Body.String() {
+		t.Fatal(w.Body.String())
+	}
+}
+
 func Test500OnMisconfiguredPost(t *testing.T) {
 	w := &testResponseWriter{}
 	r, _ := http.NewRequest("POST", "http://example.com/foo", bytes.NewBufferString("anything"))

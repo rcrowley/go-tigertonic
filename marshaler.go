@@ -45,9 +45,9 @@ func Marshaled(i interface{}) *Marshaler {
 			t.In(1),
 		))
 	}
-	if !t.In(2).Implements(reflect.TypeOf((*Request)(nil)).Elem()) {
+	if !t.In(2).Implements(reflect.TypeOf((*interface{})(nil)).Elem()) {
 		panic(NewMarshalerError(
-			"type of third argument was %v, not Request",
+			"type of third argument was %v, not some kind of interface{}",
 			t.Out(2),
 		))
 	}
@@ -66,7 +66,7 @@ func Marshaled(i interface{}) *Marshaler {
 			t.Out(1),
 		))
 	}
-	if !t.Out(2).Implements(reflect.TypeOf((*Response)(nil)).Elem()) {
+	if !t.Out(2).Implements(reflect.TypeOf((*interface{})(nil)).Elem()) {
 		panic(NewMarshalerError(
 			"type of third return value was %v, not Response",
 			t.Out(2),
@@ -154,7 +154,7 @@ func (m *Marshaler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	status := int(out[0].Int())
 	header := out[1].Interface().(http.Header)
-	rs := out[2].Interface().(Response)
+	rs := out[2].Interface()
 	if !out[3].IsNil() {
 		err := out[3].Interface().(error)
 		if httpEquivError, ok := err.(HTTPEquivError); ok {
@@ -193,13 +193,7 @@ func NewMarshalerError(format string, args ...interface{}) MarshalerError {
 
 func (e MarshalerError) Error() string { return string(e) }
 
-// Request is just a named empty interface for HTTP request bodies.
-type Request interface{}
-
-var nilRequest = reflect.ValueOf((*Request)(nil))
-
-// Response is just a named empty interface for HTTP response bodies.
-type Response interface{}
+var nilRequest = reflect.ValueOf((*interface{})(nil))
 
 func acceptJSON(r *http.Request) bool {
 	accept := r.Header.Get("Accept")
