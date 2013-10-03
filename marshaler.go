@@ -100,6 +100,11 @@ func (m *Marshaler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	in2 := m.v.Type().In(2)
 	if reflect.Interface == in2.Kind() && 0 == in2.NumMethod() {
 		rq = nilRequest
+	} else if reflect.Slice == in2.Kind() || reflect.Map == in2.Kind() {
+		// non-pointer maps/slices require special treatment because
+		// json.Unmarshal won't work on a non-pointer destination. We
+		// add a level indirection here, then deref it before .Call()
+		rq = reflect.New(reflect.SliceOf(in2.Elem()))
 	} else {
 		rq = reflect.New(in2.Elem())
 	}
@@ -138,6 +143,10 @@ func (m *Marshaler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		)
 	}
 	var out []reflect.Value
+	// if we're dealing with a non-pointer map or slice, so we need to deref
+	if in2.Kind() == reflect.Slice || reflect.Map == in2.Kind() {
+		rq = rq.Elem()
+	}
 	if 3 == m.v.Type().NumIn() {
 		out = m.v.Call([]reflect.Value{
 			reflect.ValueOf(r.URL),
