@@ -51,6 +51,11 @@ func Marshaled(i interface{}) *Marshaler {
 			t.Out(2),
 		))
 	}
+	if t.In(2).Kind() == reflect.Slice {
+		panic(NewMarshalerError(
+			"Slice used as request body argument. Use pointer to slice instead.",
+		))
+	}
 	if 4 != t.NumOut() {
 		panic(NewMarshalerError("output arity was %v, not 4", t.NumOut()))
 	}
