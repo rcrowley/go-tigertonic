@@ -42,7 +42,7 @@ func TestLogger(t *testing.T) {
 	w := &testResponseWriter{}
 	r, _ := http.NewRequest(
 		"POST",
-		"http://example.com/foo",
+		"http://example.com/foo?bar=baz",
 		bytes.NewBufferString(`{"foo":"bar"}`),
 	)
 	r.Header.Set("Accept", "application/json")
@@ -56,7 +56,7 @@ func TestLogger(t *testing.T) {
 	s := b.String()
 	requestID := s[:16]
 	if fmt.Sprintf(
-		`%s > POST /foo HTTP/1.1
+		`%s > POST /foo?bar=baz HTTP/1.1
 %s > Accept: application/json
 %s > Content-Type: application/json
 %s >

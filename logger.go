@@ -100,7 +100,13 @@ func (l *Logger) Println(v ...interface{}) { l.Output(2, fmt.Sprintln(v...)) }
 // output and pass through to the underlying http.Handler.
 func (l *Logger) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	requestID := NewRequestID()
-	l.Printf("%s > %s %s %s\n", requestID, r.Method, r.URL.Path, r.Proto)
+	l.Printf(
+		"%s > %s %s %s\n",
+		requestID,
+		r.Method,
+		r.URL.RequestURI(),
+		r.Proto,
+	)
 	for key, values := range r.Header {
 		for _, value := range values {
 			l.Printf("%s > %s: %s\n", requestID, key, value)
