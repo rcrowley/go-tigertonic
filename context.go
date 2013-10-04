@@ -8,7 +8,7 @@ import (
 
 var (
 	contexts map[*http.Request]interface{}
-	mutex sync.Mutex
+	mutex    sync.Mutex
 )
 
 // Context returns the request context as an interface{} given a pointer
@@ -23,7 +23,7 @@ func Context(r *http.Request) interface{} {
 // any type with each request it handles.
 type ContextHandler struct {
 	handler http.Handler
-	t reflect.Type
+	t       reflect.Type
 }
 
 // WithContext wraps an http.Handler and associates a new context object of
@@ -33,7 +33,7 @@ type ContextHandler struct {
 func WithContext(handler http.Handler, i interface{}) *ContextHandler {
 	return &ContextHandler{
 		handler: handler,
-		t: reflect.TypeOf(i),
+		t:       reflect.TypeOf(i),
 	}
 }
 
