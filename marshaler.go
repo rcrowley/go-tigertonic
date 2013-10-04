@@ -104,7 +104,7 @@ func (m *Marshaler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		// non-pointer maps/slices require special treatment because
 		// json.Unmarshal won't work on a non-pointer destination. We
 		// add a level indirection here, then deref it before .Call()
-		rq = reflect.New(reflect.SliceOf(in2.Elem()))
+		rq = reflect.New(in2)
 	} else {
 		rq = reflect.New(in2.Elem())
 	}

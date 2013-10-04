@@ -2,6 +2,7 @@ package tigertonic
 
 import (
 	"bytes"
+	"encoding/json"
 	"errors"
 	"net/http"
 	"net/url"
@@ -255,6 +256,41 @@ func Test500OnMisconfiguredPost(t *testing.T) {
 	}
 }
 
+func TestNonPointerMapBody(t *testing.T) {
+	w := &testResponseWriter{}
+	r, _ := http.NewRequest("POST", "http://example.com/foo", bytes.NewBufferString(`{"a": "b"}`))
+	r.Header.Set("Accept", "application/json")
+	r.Header.Set("Content-Type", "application/json")
+	Logged(Marshaled(func(u *url.URL, h http.Header, m map[string]string) (int, http.Header, string, error) {
+		return http.StatusOK, nil, m["a"], nil
+	}), nil).ServeHTTP(w, r)
+	if http.StatusOK != w.Status {
+		t.Fatalf("Server responded %d to a post with a non-pointer map body", w.Status)
+	}
+	var result string
+	_ = json.Unmarshal(w.Body.Bytes(), &result)
+	if "b" != result {
+		t.Fatalf("Body should have been 'b', but instead was '%s'", string(w.Body.Bytes()))
+	}
+}
+
+func TestNonPointerSliceBody(t *testing.T) {
+	w := &testResponseWriter{}
+	r, _ := http.NewRequest("POST", "http://example.com/foo", bytes.NewBufferString(`["a", "b", "c"]`))
+	r.Header.Set("Accept", "application/json")
+	r.Header.Set("Content-Type", "application/json")
+	Logged(Marshaled(func(u *url.URL, h http.Header, s []string) (int, http.Header, string, error) {
+		return http.StatusOK, nil, s[1], nil
+	}), nil).ServeHTTP(w, r)
+	if http.StatusOK != w.Status {
+		t.Fatalf("Server responded %d to a post with a non-pointer map body", w.Status)
+	}
+	var result string
+	_ = json.Unmarshal(w.Body.Bytes(), &result)
+	if "b" != result {
+		t.Fatalf("Body should have been 'b', but instead was '%s'", string(w.Body.Bytes()))
+	}
+}
 func testMarshaledPanic(i interface{}, t *testing.T) {
 	defer func() {
 		err := recover()
