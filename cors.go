@@ -5,10 +5,10 @@ import (
 	"strings"
 )
 
-// BUG(mihasya): currently only handles Origin-related CORS headers. Early
-// indication is that logic will be required for handling certain header types
-// (the credential-related ones in particular) so we may need to come up with
-// something more robust than just dragging an http.Header around
+// BUG(mihasya): currently only handles Origin and header-related CORS headers.
+// Early indication is that logic will be required for handling certain header
+// types (the credential-related ones in particular) so we may need to come up
+// with something more robust than just dragging an http.Header around
 
 const CORSRequestOrigin string = "Origin"
 const CORSRequestMethod string = "Access-Control-Request-Method"
