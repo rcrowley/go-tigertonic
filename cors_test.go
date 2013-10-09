@@ -19,7 +19,7 @@ func TestCORSOPTIONS(t *testing.T) {
 	mux := NewTrieServeMux()
 	mux.Handle("GET", "/foo", NewCORSBuilder().SetAllowedOrigin("*").Build(Marshaled(get)))
 	mux.Handle("GET", "/baz", NewCORSBuilder().SetAllowedOrigin("http://gooddomain.com").Build(Marshaled(get)))
-	mux.Handle("GET", "/quux", NewCORSBuilder().AddAllowedHeaders([]string{"X-Pizza-Fax"}).Build(Marshaled(get)))
+	mux.Handle("GET", "/quux", NewCORSBuilder().AddAllowedHeaders("X-Pizza-Fax").Build(Marshaled(get)))
 
 	w := &testResponseWriter{}
 	r, _ := http.NewRequest("OPTIONS", "http://example.com/baz", nil)

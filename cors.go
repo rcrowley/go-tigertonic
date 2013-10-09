@@ -64,7 +64,7 @@ func (self *CORSBuilder) SetAllowedOrigin(origin string) *CORSBuilder {
 	return self
 }
 
-func (self *CORSBuilder) AddAllowedHeaders(headers []string) *CORSBuilder {
+func (self *CORSBuilder) AddAllowedHeaders(headers ...string) *CORSBuilder {
 	self.allowedHeaders = append(self.allowedHeaders, headers...)
 	return self
 }
