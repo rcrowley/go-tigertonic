@@ -19,6 +19,7 @@ func TestCORSOPTIONS(t *testing.T) {
 	mux := NewTrieServeMux()
 	mux.Handle("GET", "/foo", NewCORSBuilder().SetAllowedOrigin("*").Build(Marshaled(get)))
 	mux.Handle("GET", "/baz", NewCORSBuilder().SetAllowedOrigin("http://gooddomain.com").Build(Marshaled(get)))
+	mux.Handle("GET", "/quux", NewCORSBuilder().AddAllowedHeaders("X-Pizza-Fax").Build(Marshaled(get)))
 
 	w := &testResponseWriter{}
 	r, _ := http.NewRequest("OPTIONS", "http://example.com/baz", nil)
@@ -68,6 +69,20 @@ func TestCORSOPTIONS(t *testing.T) {
 	}
 	if "http://gooddomain.com" != w.Header().Get(CORSAllowOrigin) {
 		t.Fatal(w.Header().Get(CORSAllowOrigin))
+	}
+
+	// just requesting some headers, mane
+	w = &testResponseWriter{}
+	r, _ = http.NewRequest("OPTIONS", "http://example.com/quux", nil)
+	r.Header.Set(CORSRequestMethod, "GET")
+	r.Header.Add(CORSRequestHeaders, "X-Pizza-Fax")
+	mux.ServeHTTP(w, r)
+	if http.StatusOK != w.Status {
+		t.Fatal(w.Status)
+	}
+	t.Log(w.Header())
+	if "X-Pizza-Fax" != w.Header().Get(CORSAllowHeaders) {
+		t.Fatalf("Headers received missing pizza fax! %s", w.Header())
 	}
 }
 
