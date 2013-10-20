@@ -117,7 +117,7 @@ func (mux *TrieServeMux) find(r *http.Request, paths []string) (url.Values, http
 		r.URL.Path = "/" + strings.Join(paths, "/")
 		return nil, handler, mux.pattern
 	}
-	return nil, NotFoundHandler(), ""
+	return nil, NotFoundHandler{}, ""
 }
 
 type methodNotAllowedHandler struct {

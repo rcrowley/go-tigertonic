@@ -8,12 +8,9 @@ import (
 )
 
 // NotFoundHandler responds 404 to every request, possibly with a JSON body.
-func NotFoundHandler() http.HandlerFunc {
-	return http.HandlerFunc(NotFoundHandlerFunc)
-}
+type NotFoundHandler struct{}
 
-// NotFound responds 404 to every request, possibly with a JSON body.
-func NotFoundHandlerFunc(w http.ResponseWriter, r *http.Request) {
+func (NotFoundHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	description := fmt.Sprintf("%s %s not found", r.Method, r.URL.Path)
 	if acceptJSON(r) {
 		w.Header().Set("Content-Type", "application/json")

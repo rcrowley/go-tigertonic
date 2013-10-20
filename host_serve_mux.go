@@ -34,7 +34,7 @@ func (mux HostServeMux) Handler(r *http.Request) (http.Handler, string) {
 	if handler, ok := mux[r.URL.Host]; ok {
 		return handler, r.URL.Host
 	}
-	return NotFoundHandler(), ""
+	return NotFoundHandler{}, ""
 }
 
 // ServeHTTP routes an HTTP request to the http.Handler registered for the

@@ -13,7 +13,7 @@ func TestHTTPBasicAuthAuthorized(t *testing.T) {
 	HTTPBasicAuth(
 		map[string]string{"username": "password"},
 		"Tiger Tonic",
-		NotFoundHandler(),
+		NotFoundHandler{},
 	).ServeHTTP(w, r)
 	if http.StatusNotFound != w.Status {
 		t.Fatal(w.Status)
@@ -27,7 +27,7 @@ func TestHTTPBasicAuthBase64Error(t *testing.T) {
 	HTTPBasicAuth(
 		map[string]string{"username": "password"},
 		"Tiger Tonic",
-		NotFoundHandler(),
+		NotFoundHandler{},
 	).ServeHTTP(w, r)
 	if http.StatusUnauthorized != w.Status {
 		t.Fatal(w.Status)
@@ -41,7 +41,7 @@ func TestHTTPBasicAuthMalformed(t *testing.T) {
 	HTTPBasicAuth(
 		map[string]string{"username": "password"},
 		"Tiger Tonic",
-		NotFoundHandler(),
+		NotFoundHandler{},
 	).ServeHTTP(w, r)
 	if http.StatusUnauthorized != w.Status {
 		t.Fatal(w.Status)
@@ -55,7 +55,7 @@ func TestHTTPBasicAuthUnauthorized(t *testing.T) {
 	HTTPBasicAuth(
 		map[string]string{"username": "password"},
 		"Tiger Tonic",
-		NotFoundHandler(),
+		NotFoundHandler{},
 	).ServeHTTP(w, r)
 	if http.StatusUnauthorized != w.Status {
 		t.Fatal(w.Status)
@@ -68,7 +68,7 @@ func TestHTTPBasicAuthUnspecified(t *testing.T) {
 	HTTPBasicAuth(
 		map[string]string{"username": "password"},
 		"Tiger Tonic",
-		NotFoundHandler(),
+		NotFoundHandler{},
 	).ServeHTTP(w, r)
 	if http.StatusUnauthorized != w.Status {
 		t.Fatal(w.Status)

@@ -112,7 +112,7 @@ func TestNamespace(t *testing.T) {
 		w.Write([]byte(r.URL.Path))
 	})
 	nsMux := NewTrieServeMux()
-	nsMux.HandleNamespace("", NotFoundHandler()) // Test longest match wins.
+	nsMux.HandleNamespace("", NotFoundHandler{}) // Test longest match wins.
 	nsMux.HandleNamespace("/foo", mux)
 	w := &testResponseWriter{}
 	r, _ := http.NewRequest("GET", "http://example.com/foo/bar", nil)

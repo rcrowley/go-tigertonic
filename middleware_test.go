@@ -9,7 +9,7 @@ import (
 func TestFirst1(t *testing.T) {
 	w := &testResponseWriter{}
 	r, _ := http.NewRequest("GET", "http://example.com/", nil)
-	First(NotFoundHandler()).ServeHTTP(w, r)
+	First(NotFoundHandler{}).ServeHTTP(w, r)
 	if http.StatusNotFound != w.Status {
 		t.Fatal(w.Status)
 	}
@@ -18,7 +18,7 @@ func TestFirst1(t *testing.T) {
 func TestFirst2(t *testing.T) {
 	w := &testResponseWriter{}
 	r, _ := http.NewRequest("GET", "http://example.com/", nil)
-	First(noopHandler{}, NotFoundHandler()).ServeHTTP(w, r)
+	First(noopHandler{}, NotFoundHandler{}).ServeHTTP(w, r)
 	if http.StatusNotFound != w.Status {
 		t.Fatal(w.Status)
 	}
@@ -27,7 +27,7 @@ func TestFirst2(t *testing.T) {
 func TestFirst3(t *testing.T) {
 	w := &testResponseWriter{}
 	r, _ := http.NewRequest("GET", "http://example.com/", nil)
-	First(noopHandler{}, noopHandler{}, NotFoundHandler()).ServeHTTP(w, r)
+	First(noopHandler{}, noopHandler{}, NotFoundHandler{}).ServeHTTP(w, r)
 	if http.StatusNotFound != w.Status {
 		t.Fatal(w.Status)
 	}
@@ -36,7 +36,7 @@ func TestFirst3(t *testing.T) {
 func TestFirst4(t *testing.T) {
 	w := &testResponseWriter{}
 	r, _ := http.NewRequest("GET", "http://example.com/", nil)
-	First(NotFoundHandler(), &fatalHandler{t}).ServeHTTP(w, r)
+	First(NotFoundHandler{}, &fatalHandler{t}).ServeHTTP(w, r)
 	if http.StatusNotFound != w.Status {
 		t.Fatal(w.Status)
 	}
@@ -49,7 +49,7 @@ func TestIfFalse(t *testing.T) {
 		return http.Header{
 			"WWW-Authenticate": []string{"Basic realm=\"Tiger Tonic\""},
 		}, Unauthorized{errors.New("Unauthorized")}
-	}, NotFoundHandler()).ServeHTTP(w, r)
+	}, NotFoundHandler{}).ServeHTTP(w, r)
 	if http.StatusUnauthorized != w.Status {
 		t.Fatal(w.Status)
 	}
@@ -63,7 +63,7 @@ func TestIfTrue(t *testing.T) {
 	r, _ := http.NewRequest("GET", "http://example.com/", nil)
 	If(func(r *http.Request) (http.Header, error) {
 		return nil, nil
-	}, NotFoundHandler()).ServeHTTP(w, r)
+	}, NotFoundHandler{}).ServeHTTP(w, r)
 	if http.StatusNotFound != w.Status {
 		t.Fatal(w.Status)
 	}
