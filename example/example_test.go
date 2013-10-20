@@ -43,6 +43,18 @@ func TestGet(t *testing.T) {
 	}
 }
 
+func TestMethodNotAllowed(t *testing.T) {
+	defer func() { recover() }()
+	mocking.URL(hMux, "PUT", "http://example.com/1.0/stuff")
+	t.Fail()
+}
+
+func TestNotFound(t *testing.T) {
+	defer func() { recover() }()
+	mocking.URL(hMux, "GET", "http://example.com/1.0/things")
+	t.Fail()
+}
+
 func TestUpdate(t *testing.T) {
 	s, _, rs, err := update(
 		mocking.URL(hMux, "POST", "http://example.com/1.0/stuff/ID"),
