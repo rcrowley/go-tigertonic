@@ -64,6 +64,7 @@ type Logger struct {
 	*log.Logger
 	handler  http.Handler
 	redactor Redactor
+	RequestIDCreator RequestIDCreator
 }
 
 // Logged returns an http.Handler that logs requests and responses, complete
@@ -74,6 +75,7 @@ func Logged(handler http.Handler, redactor Redactor) *Logger {
 		Logger:   log.New(os.Stdout, "", log.Ltime|log.Lmicroseconds),
 		handler:  handler,
 		redactor: redactor,
+		RequestIDCreator: requestIDCreator,
 	}
 }
 
@@ -99,7 +101,7 @@ func (l *Logger) Println(v ...interface{}) { l.Output(2, fmt.Sprintln(v...)) }
 // ServeHTTP wraps the http.Request and http.ResponseWriter to log to standard
 // output and pass through to the underlying http.Handler.
 func (l *Logger) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	requestID := NewRequestID()
+	requestID := l.RequestIDCreator(r)
 	l.Printf(
 		"%s > %s %s %s\n",
 		requestID,
@@ -133,6 +135,15 @@ type Redactor func(string) string
 // A unique RequestID is given to each request and is included with each line
 // of each log entry.
 type RequestID string
+
+// A RequestIDCreator is a function that takes a request and returns a unique
+// RequestID for it.
+type RequestIDCreator func(r *http.Request) RequestID
+
+// Default RequestIDCreator implementation
+func requestIDCreator(r *http.Request) RequestID {
+	return NewRequestID()
+}
 
 // NewRequestID returns a new 16-character random RequestID.
 func NewRequestID() RequestID {
