@@ -26,6 +26,7 @@ func TestApacheLogger(t *testing.T) {
 	r.Header.Set("Referer", "http://example.com/")
 	r.Header.Set("User-Agent", "Tiger Tonic tests")
 	r.RemoteAddr = "127.0.0.1:48879"
+	r.RequestURI = "/foo"
 	logger := ApacheLogged(Marshaled(func(u *url.URL, h http.Header, _ interface{}) (int, http.Header, *testResponse, error) {
 		return http.StatusOK, nil, &testResponse{"bar"}, nil
 	}))
@@ -33,7 +34,7 @@ func TestApacheLogger(t *testing.T) {
 	logger.Logger = log.New(b, "", 0)
 	logger.ServeHTTP(w, r)
 	s := b.String()
-	if ok, _ := regexp.MatchString(`^127\.0\.0\.1:48879 - rcrowley \[\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{1,9} [+-]\d{4} [A-Z]{3}\] "GET " 200 14 "http://example.com/" "Tiger Tonic tests"\n$`, s); !ok {
+	if ok, _ := regexp.MatchString(`^127\.0\.0\.1 - rcrowley \[\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{1,9} [+-]\d{4} [A-Z]{3}\] "GET /foo HTTP/1.1" 200 14 "http://example.com/" "Tiger Tonic tests"\n$`, s); !ok {
 		t.Fatal(s)
 	}
 }

@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 )
 
@@ -30,11 +31,15 @@ func ApacheLogged(handler http.Handler) *ApacheLogger {
 func (al *ApacheLogger) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	aw := &apacheResponseWriter{ResponseWriter: w}
 	al.handler.ServeHTTP(aw, r)
-	referer := r.Header.Get("Referer")
+	remoteAddr := r.RemoteAddr
+	if index := strings.LastIndex(remoteAddr, ":"); index != -1 {
+		remoteAddr = remoteAddr[:index]
+	}
+	referer := r.Referer()
 	if "" == referer {
 		referer = "-"
 	}
-	userAgent := r.Header.Get("User-Agent")
+	userAgent := r.UserAgent()
 	if "" == userAgent {
 		userAgent = "-"
 	}
@@ -43,13 +48,14 @@ func (al *ApacheLogger) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		username = "-"
 	}
 	al.Printf(
-		"%s %s %s [%v] \"%s %s\" %d %d \"%s\" \"%s\"\n",
-		r.RemoteAddr,
+		"%s %s %s [%v] \"%s %s %s\" %d %d \"%s\" \"%s\"\n",
+		remoteAddr,
 		"-", // We're not supporting identd, sorry.
 		username,
 		time.Now(),
 		r.Method,
 		r.RequestURI,
+		r.Proto,
 		aw.Status,
 		aw.Size,
 		referer,
@@ -62,8 +68,8 @@ func (al *ApacheLogger) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 // by a user-defined function.
 type Logger struct {
 	*log.Logger
-	handler  http.Handler
-	redactor Redactor
+	handler          http.Handler
+	redactor         Redactor
 	RequestIDCreator RequestIDCreator
 }
 
@@ -72,9 +78,9 @@ type Logger struct {
 // redacted by a user-defined function.
 func Logged(handler http.Handler, redactor Redactor) *Logger {
 	return &Logger{
-		Logger:   log.New(os.Stdout, "", log.Ltime|log.Lmicroseconds),
-		handler:  handler,
-		redactor: redactor,
+		Logger:           log.New(os.Stdout, "", log.Ltime|log.Lmicroseconds),
+		handler:          handler,
+		redactor:         redactor,
 		RequestIDCreator: requestIDCreator,
 	}
 }
@@ -157,13 +163,17 @@ type apacheResponseWriter struct {
 }
 
 func (w *apacheResponseWriter) Write(p []byte) (int, error) {
-	w.Size += len(p)
-	return w.ResponseWriter.Write(p)
+	if w.Status == 0 {
+		w.Status = http.StatusOK
+	}
+	size, err := w.ResponseWriter.Write(p)
+	w.Size += size
+	return size, err
 }
 
 func (w *apacheResponseWriter) WriteHeader(status int) {
-	w.Status = status
 	w.ResponseWriter.WriteHeader(status)
+	w.Status = status
 }
 
 type readCloser struct {
