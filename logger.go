@@ -193,8 +193,8 @@ func (r *readCloser) Read(p []byte) (int, error) {
 type responseWriter struct {
 	http.ResponseWriter
 	*Logger
-	request   *http.Request
-	requestID RequestID
+	request     *http.Request
+	requestID   RequestID
 	wroteHeader bool
 }
 
