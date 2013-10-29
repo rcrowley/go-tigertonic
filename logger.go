@@ -164,7 +164,7 @@ type apacheResponseWriter struct {
 
 func (w *apacheResponseWriter) Write(p []byte) (int, error) {
 	if w.Status == 0 {
-		w.Status = http.StatusOK
+		w.WriteHeader(http.StatusOK)
 	}
 	size, err := w.ResponseWriter.Write(p)
 	w.Size += size
@@ -195,9 +195,13 @@ type responseWriter struct {
 	*Logger
 	request   *http.Request
 	requestID RequestID
+	wroteHeader bool
 }
 
 func (w *responseWriter) Write(p []byte) (int, error) {
+	if !w.wroteHeader {
+		w.WriteHeader(http.StatusOK)
+	}
 	if '\n' == p[len(p)-1] {
 		w.Println(w.requestID, "<", string(p[:len(p)-1]))
 	} else {
@@ -207,7 +211,14 @@ func (w *responseWriter) Write(p []byte) (int, error) {
 }
 
 func (w *responseWriter) WriteHeader(status int) {
-	w.Printf("%s < %s %d %s\n", w.requestID, w.request.Proto, status, http.StatusText(status))
+	w.wroteHeader = true
+	w.Printf(
+		"%s < %s %d %s\n",
+		w.requestID,
+		w.request.Proto,
+		status,
+		http.StatusText(status),
+	)
 	for name, values := range w.Header() {
 		for _, value := range values {
 			w.Printf("%s < %s: %s\n", w.requestID, name, value)
