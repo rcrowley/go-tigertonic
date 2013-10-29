@@ -14,11 +14,7 @@ import (
 
 func TestApacheLogger(t *testing.T) {
 	w := &testResponseWriter{}
-	r, _ := http.NewRequest(
-		"GET",
-		"http://example.com/foo",
-		bytes.NewBufferString(`{"foo":"bar"}`),
-	)
+	r, _ := http.NewRequest("GET", "http://example.com/foo", nil)
 	r.Header.Set("Authorization", fmt.Sprintf(
 		"Basic %s",
 		base64.StdEncoding.EncodeToString([]byte("rcrowley:password")),
@@ -36,6 +32,24 @@ func TestApacheLogger(t *testing.T) {
 	s := b.String()
 	if ok, _ := regexp.MatchString(`^127\.0\.0\.1 - rcrowley \[\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{1,9} [+-]\d{4} [A-Z]{3}\] "GET /foo HTTP/1.1" 200 14 "http://example.com/" "Tiger Tonic tests"\n$`, s); !ok {
 		t.Fatal(s)
+	}
+}
+
+// Test that ApacheLogger always calls WriteHeader.
+func TestApacheLoggerWriteHeader(t *testing.T) {
+	w := &testResponseWriter{}
+	r, _ := http.NewRequest("GET", "http://example.com/foo", nil)
+	logger := ApacheLogged(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("X-Hi", "hi")
+		w.Write([]byte("hi\n"))
+	}))
+	logger.Logger = log.New(&bytes.Buffer{}, "", 0)
+	logger.ServeHTTP(w, r)
+	if !w.WroteHeader {
+		t.Fatal("didn't call WriteHeader")
+	}
+	if "hi\n" != w.Body.String() {
+		t.Fatal(w.Body.String())
 	}
 }
 
@@ -78,6 +92,24 @@ func TestLogger(t *testing.T) {
 		requestID,
 	) != s {
 		t.Fatal(s)
+	}
+}
+
+// Test that Logger always calls WriteHeader.
+func TestLoggerWriteHeader(t *testing.T) {
+	w := &testResponseWriter{}
+	r, _ := http.NewRequest("GET", "http://example.com/foo", nil)
+	logger := Logged(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("X-Hi", "hi")
+		w.Write([]byte("hi\n"))
+	}), nil)
+	logger.Logger = log.New(&bytes.Buffer{}, "", 0)
+	logger.ServeHTTP(w, r)
+	if !w.WroteHeader {
+		t.Fatal("didn't call WriteHeader")
+	}
+	if "hi\n" != w.Body.String() {
+		t.Fatal(w.Body.String())
 	}
 }
 
