@@ -6,10 +6,10 @@ import (
 )
 
 type testResponseWriter struct {
-	Body   bytes.Buffer
-	Status int
+	Body        bytes.Buffer
+	Status      int
 	WroteHeader bool
-	header http.Header
+	header      http.Header
 }
 
 func (w *testResponseWriter) Header() http.Header {
