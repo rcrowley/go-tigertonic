@@ -30,8 +30,11 @@ func Marshaled(i interface{}) *Marshaler {
 	if reflect.Func != t.Kind() {
 		panic(NewMarshalerError("kind was %v, not Func", t.Kind()))
 	}
-	if 3 != t.NumIn() && 4 != t.NumIn() {
-		panic(NewMarshalerError("input arity was %v, not 3 or 4", t.NumIn()))
+	if 2 != t.NumIn() && 3 != t.NumIn() && 4 != t.NumIn() {
+		panic(NewMarshalerError(
+			"input arity was %v, not 2, 3, or 4",
+			t.NumIn(),
+		))
 	}
 	if "*url.URL" != t.In(0).String() {
 		panic(NewMarshalerError(
@@ -43,12 +46,6 @@ func Marshaled(i interface{}) *Marshaler {
 		panic(NewMarshalerError(
 			"type of second argument was %v, not http.Header",
 			t.In(1),
-		))
-	}
-	if !t.In(2).Implements(reflect.TypeOf((*interface{})(nil)).Elem()) {
-		panic(NewMarshalerError(
-			"type of third argument was %v, not some kind of interface{}",
-			t.Out(2),
 		))
 	}
 	if 4 != t.NumOut() {
@@ -97,16 +94,20 @@ func (m *Marshaler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	wHeader.Set("Content-Type", "application/json")
 	var rq reflect.Value
-	in2 := m.v.Type().In(2)
-	if reflect.Interface == in2.Kind() && 0 == in2.NumMethod() {
-		rq = nilRequest
-	} else if reflect.Slice == in2.Kind() || reflect.Map == in2.Kind() {
-		// non-pointer maps/slices require special treatment because
-		// json.Unmarshal won't work on a non-pointer destination. We
-		// add a level indirection here, then deref it before .Call()
-		rq = reflect.New(in2)
+	if 2 < m.v.Type().NumIn() {
+		in2 := m.v.Type().In(2)
+		if reflect.Interface == in2.Kind() && 0 == in2.NumMethod() {
+			rq = nilRequest
+		} else if reflect.Slice == in2.Kind() || reflect.Map == in2.Kind() {
+			// non-pointer maps/slices require special treatment because
+			// json.Unmarshal won't work on a non-pointer destination. We
+			// add a level indirection here, then deref it before .Call()
+			rq = reflect.New(in2)
+		} else {
+			rq = reflect.New(in2.Elem())
+		}
 	} else {
-		rq = reflect.New(in2.Elem())
+		rq = nilRequest
 	}
 	if "PATCH" == r.Method || "POST" == r.Method || "PUT" == r.Method {
 		if rq == nilRequest {
@@ -142,24 +143,31 @@ func (m *Marshaler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			r.Method,
 		)
 	}
-	var out []reflect.Value
-	// if we're dealing with a non-pointer map or slice, so we need to deref
-	if in2.Kind() == reflect.Slice || reflect.Map == in2.Kind() {
+	if reflect.Slice == rq.Elem().Kind() || reflect.Map == rq.Elem().Kind() {
 		rq = rq.Elem()
 	}
-	if 3 == m.v.Type().NumIn() {
+	var out []reflect.Value
+	switch m.v.Type().NumIn() {
+	case 2:
+		out = m.v.Call([]reflect.Value{
+			reflect.ValueOf(r.URL),
+			reflect.ValueOf(r.Header),
+		})
+	case 3:
 		out = m.v.Call([]reflect.Value{
 			reflect.ValueOf(r.URL),
 			reflect.ValueOf(r.Header),
 			rq,
 		})
-	} else {
+	case 4:
 		out = m.v.Call([]reflect.Value{
 			reflect.ValueOf(r.URL),
 			reflect.ValueOf(r.Header),
 			rq,
 			reflect.ValueOf(Context(r)),
 		})
+	default:
+		panic(m.v.Type())
 	}
 	status := int(out[0].Int())
 	header := out[1].Interface().(http.Header)

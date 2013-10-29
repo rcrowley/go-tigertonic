@@ -9,41 +9,39 @@ import (
 	"testing"
 )
 
+func TestMarshaledCalm(t *testing.T) {
+	Marshaled(func(u *url.URL, h http.Header, rq *testRequest) (int, http.Header, *testResponse, error) {
+		return 0, http.Header{}, nil, nil
+	})
+}
+
 func TestMarshaledPanicNumIn(t *testing.T) {
 	testMarshaledPanic(func() {}, t)
-	testMarshaledPanic(func(u int) {}, t)
-	testMarshaledPanic(func(u, h int) {}, t)
-	testMarshaledPanic(func(u, h, rq, foo int) {}, t)
+	testMarshaledPanic(func(u interface{}) {}, t)
+	testMarshaledPanic(func(u, h interface{}) {}, t)
+	testMarshaledPanic(func(u, h, rq, foo, bar interface{}) {}, t)
 }
 
 func TestMarshaledPanicIn0(t *testing.T) {
-	testMarshaledPanic(func(u, h, rq int) {}, t)
+	testMarshaledPanic(func(u, h, rq interface{}) {}, t)
 }
 
 func TestMarshaledPanicIn1(t *testing.T) {
-	testMarshaledPanic(func(u *url.URL, h, rq int) {}, t)
-}
-
-func TestMarshaledPanicIn2(t *testing.T) {
-	testMarshaledPanic(func(u *url.URL, h http.Header, rq int) {}, t)
-}
-
-func TestMarshaledPanicIn3(t *testing.T) {
-	testMarshaledPanic(func(u *url.URL, h http.Header, rq *testRequest) {}, t)
+	testMarshaledPanic(func(u *url.URL, h, rq interface{}) {}, t)
 }
 
 func TestMarshaledPanicNumOut(t *testing.T) {
-	testMarshaledPanic(func(u *url.URL, h http.Header, rq *testRequest) {}, t)
-	testMarshaledPanic(func(u *url.URL, h http.Header, rq *testRequest) int {
+	testMarshaledPanic(func(u *url.URL, h http.Header) {}, t)
+	testMarshaledPanic(func(u *url.URL, h http.Header) int {
 		return 0
 	}, t)
-	testMarshaledPanic(func(u *url.URL, h http.Header, rq *testRequest) (int, int) {
+	testMarshaledPanic(func(u *url.URL, h http.Header) (int, int) {
 		return 0, 0
 	}, t)
-	testMarshaledPanic(func(u *url.URL, h http.Header, rq *testRequest) (int, int, int) {
+	testMarshaledPanic(func(u *url.URL, h http.Header) (int, int, int) {
 		return 0, 0, 0
 	}, t)
-	testMarshaledPanic(func(u *url.URL, h http.Header, rq *testRequest) (int, int, int, int, int) {
+	testMarshaledPanic(func(u *url.URL, h http.Header) (int, int, int, int, int) {
 		return 0, 0, 0, 0, 0
 	}, t)
 }
@@ -236,6 +234,17 @@ func TestEmptyBody(t *testing.T) {
 	w := &testResponseWriter{}
 	r, _ := http.NewRequest("GET", "http://example.com/foo", nil)
 	Marshaled(func(*url.URL, http.Header, interface{}) (int, http.Header, interface{}, error) {
+		return http.StatusOK, nil, nil, nil
+	}).ServeHTTP(w, r)
+	if "" != w.Body.String() {
+		t.Fatal(w.Body.String())
+	}
+}
+
+func TestMarshaledShortGET(t *testing.T) {
+	w := &testResponseWriter{}
+	r, _ := http.NewRequest("GET", "http://example.com/foo", nil)
+	Marshaled(func(*url.URL, http.Header) (int, http.Header, interface{}, error) {
 		return http.StatusOK, nil, nil, nil
 	}).ServeHTTP(w, r)
 	if "" != w.Body.String() {
