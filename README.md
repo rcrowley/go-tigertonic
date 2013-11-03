@@ -7,6 +7,10 @@ Like the Go language itself, Tiger Tonic strives to keep features orthogonal.  I
 
 Documentation: <http://godoc.org/github.com/rcrowley/go-tigertonic>
 
+Development mailing list: <https://groups.google.com/forum/#!forum/tigertonic-dev>
+
+Users mailing list: <https://groups.google.com/forum/#!forum/tigertonic-users>
+
 `tigertonic.TrieServeMux`
 -------------------------
 
