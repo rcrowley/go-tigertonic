@@ -11,6 +11,8 @@ Development mailing list: <https://groups.google.com/forum/#!forum/tigertonic-de
 
 Users mailing list: <https://groups.google.com/forum/#!forum/tigertonic-users>
 
+IRC: `#tigertonic` on `irc.freenode.net`
+
 `tigertonic.TrieServeMux`
 -------------------------
 
