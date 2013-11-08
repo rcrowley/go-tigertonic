@@ -52,7 +52,7 @@ func (al *ApacheLogger) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		remoteAddr,
 		"-", // We're not supporting identd, sorry.
 		username,
-		time.Now(),
+		time.Now().Format("02/Jan/2006:15:04:05 -0700"),
 		r.Method,
 		r.RequestURI,
 		r.Proto,
