@@ -30,6 +30,9 @@ func (self *CORSHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if requestOrigin := r.Header.Get("Origin"); requestOrigin != "" {
 		w.Header().Set(CORSAllowOrigin, self.getAllowedOrigin(requestOrigin))
 	}
+	if requestMethods := r.Header.Get(CORSRequestHeaders); requestMethods != "" {
+		w.Header().Set(CORSAllowHeaders, self.getAllowedHeaders())
+	}
 	self.Handler.ServeHTTP(w, r)
 }
 

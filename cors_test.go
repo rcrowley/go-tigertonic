@@ -118,3 +118,35 @@ func TestCORSOrigin(t *testing.T) {
 	}
 
 }
+func TestCORSHeader(t *testing.T) {
+	mux := NewTrieServeMux()
+	mux.Handle("GET", "/foo", NewCORSBuilder().Build(Marshaled(get)))
+	mux.Handle("GET", "/baz", NewCORSBuilder().AddAllowedHeaders("X-Fancy-Header").Build(Marshaled(get)))
+
+	// wildcard
+	w := &testResponseWriter{}
+	r, _ := http.NewRequest("GET", "http://example.com/foo", nil)
+	r.Header.Set("Accept", "application/json")
+	r.Header.Set(CORSRequestHeaders, "X-Header-You-Dont-Want")
+	mux.ServeHTTP(w, r)
+	if http.StatusOK != w.Status {
+		t.Fatal(w.Status)
+	}
+	if "" != w.Header().Get(CORSAllowHeaders) {
+		t.Fatal(w.Header().Get(CORSAllowOrigin))
+	}
+
+	// specific
+	w = &testResponseWriter{}
+	r, _ = http.NewRequest("GET", "http://example.com/baz", nil)
+	r.Header.Set("Accept", "application/json")
+	r.Header.Set(CORSRequestHeaders, "X-Fancy-Header")
+	mux.ServeHTTP(w, r)
+	if http.StatusOK != w.Status {
+		t.Fatal(w.Status)
+	}
+	if "X-Fancy-Header" != w.Header().Get(CORSAllowHeaders) {
+		t.Fatal(w.Header().Get(CORSAllowOrigin))
+	}
+
+}
