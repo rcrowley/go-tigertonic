@@ -30,7 +30,7 @@ func TestApacheLogger(t *testing.T) {
 	logger.Logger = log.New(b, "", 0)
 	logger.ServeHTTP(w, r)
 	s := b.String()
-	if ok, _ := regexp.MatchString(`^127\.0\.0\.1 - rcrowley \[\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{1,9} [+-]\d{4} [A-Z]{3}\] "GET /foo HTTP/1.1" 200 14 "http://example.com/" "Tiger Tonic tests"\n$`, s); !ok {
+	if ok, _ := regexp.MatchString(`^127\.0\.0\.1 - rcrowley \[\d{2}/\w{3}/\d{4}:\d{2}:\d{2}:\d{2} [+-]\d{4}\] "GET /foo HTTP/1.1" 200 14 "http://example.com/" "Tiger Tonic tests"\n$`, s); !ok {
 		t.Fatal(s)
 	}
 }
