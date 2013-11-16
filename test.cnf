@@ -1,0 +1,12 @@
+[req]
+default_bits = 2048
+default_md = sha1
+distinguished_name = dn
+prompt = no
+
+[dn]
+C = US
+ST = CA
+L = San Francisco
+O = Tiger Tonic
+CN = Tiger Tonic
