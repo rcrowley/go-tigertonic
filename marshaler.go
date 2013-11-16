@@ -65,7 +65,7 @@ func Marshaled(i interface{}) *Marshaler {
 	}
 	if !t.Out(2).Implements(reflect.TypeOf((*interface{})(nil)).Elem()) {
 		panic(NewMarshalerError(
-			"type of third return value was %v, not Response",
+			"type of third return value was %v, not a pointer to a response struct",
 			t.Out(2),
 		))
 	}
