@@ -17,8 +17,8 @@ func get(u *url.URL, h http.Header, _ interface{}) (int, http.Header, *TestRespo
 
 func TestCORSOPTIONS(t *testing.T) {
 	mux := NewTrieServeMux()
-	mux.Handle("GET", "/foo", NewCORSBuilder().SetAllowedOrigin("*").Build(Marshaled(get)))
-	mux.Handle("GET", "/baz", NewCORSBuilder().SetAllowedOrigin("http://gooddomain.com").Build(Marshaled(get)))
+	mux.Handle("GET", "/foo", NewCORSBuilder().AddAllowedOrigins("*").Build(Marshaled(get)))
+	mux.Handle("GET", "/baz", NewCORSBuilder().AddAllowedOrigins("http://gooddomain.com").Build(Marshaled(get)))
 	mux.Handle("GET", "/quux", NewCORSBuilder().AddAllowedHeaders("X-Pizza-Fax").Build(Marshaled(get)))
 
 	w := &testResponseWriter{}
@@ -88,8 +88,8 @@ func TestCORSOPTIONS(t *testing.T) {
 
 func TestCORSOrigin(t *testing.T) {
 	mux := NewTrieServeMux()
-	mux.Handle("GET", "/foo", NewCORSBuilder().SetAllowedOrigin("*").Build(Marshaled(get)))
-	mux.Handle("GET", "/baz", NewCORSBuilder().SetAllowedOrigin("http://gooddomain.com").Build(Marshaled(get)))
+	mux.Handle("GET", "/foo", NewCORSBuilder().AddAllowedOrigins("*").Build(Marshaled(get)))
+	mux.Handle("GET", "/baz", NewCORSBuilder().AddAllowedOrigins("http://gooddomain.com").Build(Marshaled(get)))
 
 	// wildcard
 	w := &testResponseWriter{}

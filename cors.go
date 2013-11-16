@@ -1,14 +1,12 @@
 package tigertonic
 
 import (
+	"log"
 	"net/http"
 	"strings"
 )
 
-// BUG(mihasya): currently only handles Origin and header-related CORS headers.
-// Early indication is that logic will be required for handling certain header
-// types (the credential-related ones in particular) so we may need to come up
-// with something more robust than just dragging an http.Header around
+// TODO: add support for Allow-Credentials
 
 const CORSRequestOrigin string = "Origin"
 const CORSRequestMethod string = "Access-Control-Request-Method"
@@ -23,56 +21,77 @@ const CORSAllowHeaders string = "Access-Control-Allow-Headers"
 // correctly respond to OPTIONS headers for CORS-enabled endpoints
 type CORSHandler struct {
 	http.Handler
-	Header http.Header
+	origins map[string]bool
+	headers string
 }
 
 func (self *CORSHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	if requestOrigin := r.Header.Get("Origin"); requestOrigin != "" {
-		w.Header().Set(CORSAllowOrigin, self.getAllowedOrigin(requestOrigin))
-	}
-	if requestMethods := r.Header.Get(CORSRequestHeaders); requestMethods != "" {
-		w.Header().Set(CORSAllowHeaders, self.getAllowedHeaders())
-	}
+	self.HandleCORS(w, r)
 	self.Handler.ServeHTTP(w, r)
 }
 
-func (self *CORSHandler) getAllowedOrigin(requestOrigin string) string {
-	if self.Header.Get(CORSAllowOrigin) == "*" {
+// HandleCORS checks for CORS related request headers and writes the
+// matching response headers for both OPTIONS and regular requests
+func (self *CORSHandler) HandleCORS(w http.ResponseWriter, r *http.Request) {
+	if requestOrigin := r.Header.Get(CORSRequestOrigin); requestOrigin != "" {
+		w.Header().Set(CORSAllowOrigin, self.allowedOrigin(requestOrigin))
+	}
+	if requestMethods := r.Header.Get(CORSRequestHeaders); requestMethods != "" {
+		w.Header().Set(CORSAllowHeaders, self.allowedHeaders())
+	}
+}
+
+// allowedOrigin checks if the requested origin is allowed by the configuration
+// and returns a value that makes sense in context. It's less straight forward
+// than allowedHeaders due to browser quirks. See the following excellent doc
+// for more information: http://enable-cors.org/server_nginx.html
+func (self *CORSHandler) allowedOrigin(requestOrigin string) string {
+	if len(self.origins) == 1 && self.origins["*"] {
 		return "*"
-	} else if self.Header.Get(CORSAllowOrigin) == requestOrigin {
+	} else if self.origins[requestOrigin] {
 		return requestOrigin
 	}
 	return "null"
 }
 
-func (self *CORSHandler) getAllowedHeaders() string {
-	return self.Header.Get(CORSAllowHeaders)
+// allowedHeaders simply returns the headers permitted on requests
+func (self *CORSHandler) allowedHeaders() string {
+	return self.headers
 }
 
 // CRSBuilder facilitates the application of the same set of CORS rules to a
 // number of endpoints. One would use CORSBuilder.Build() the same way one
 // might wrap a handler in a call to Timed() or Logged().
 type CORSBuilder struct {
-	http.Header
-	allowedHeaders []string
+	origins map[string]bool
+	headers []string
 }
 
 func NewCORSBuilder() *CORSBuilder {
-	return &CORSBuilder{http.Header{}, []string{}}
+	return &CORSBuilder{map[string]bool{}, []string{}}
 }
 
-// SetAllowedOrigin sets the domain for which cross-origin requests are allowed
-func (self *CORSBuilder) SetAllowedOrigin(origin string) *CORSBuilder {
-	self.Header.Set(CORSAllowOrigin, origin)
+// AddAllowedOrigins sets the list of  domain for which cross-origin
+// requests are allowed
+func (self *CORSBuilder) AddAllowedOrigins(origins ...string) *CORSBuilder {
+	for _, origin := range origins {
+		if origin == "*" {
+			if len(origins)+len(self.origins) > 1 {
+				log.Println("WARNING: Setting CORS allowed origin * as well as other explicit origins. * will cause all origins to be accepted, and the rest of the list will be ignored. This is probably not what you want.")
+			}
+			self.origins = map[string]bool{"*": true}
+			break
+		}
+		self.origins[origin] = true
+	}
 	return self
 }
 
 func (self *CORSBuilder) AddAllowedHeaders(headers ...string) *CORSBuilder {
-	self.allowedHeaders = append(self.allowedHeaders, headers...)
+	self.headers = append(self.headers, headers...)
 	return self
 }
 
 func (self *CORSBuilder) Build(handler http.Handler) *CORSHandler {
-	self.Header.Set(CORSAllowHeaders, strings.Join(self.allowedHeaders, ", "))
-	return &CORSHandler{handler, self.Header}
+	return &CORSHandler{handler, self.origins, strings.Join(self.headers, ",")}
 }
