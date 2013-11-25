@@ -129,7 +129,7 @@ Wire it all up in `main.main`!
 
 ```go
 mux := tigertonic.NewTrieServeMux()
-mux.Handle("GET", "/stuff", tigertonic.Marshaled(tigertonic.Timed(myHandler, "myHandler", nil)))
+mux.Handle("GET", "/stuff", tigertonic.Timed(tigertonic.Marshaled(myHandler), "myHandler", nil))
 tigertonic.NewServer(":8000", tigertonic.Logged(mux, nil)).ListenAndServe()
 ```
 
