@@ -7,7 +7,8 @@ import "net/http"
 // "tigertonic.NotFound".
 var SnakeCaseHTTPEquivErrors bool
 
-// Err is a type alias for `error` so that it can be publicly exported when embedding
+// Err is an alias for the built-in error type so that it can be publicly
+// exported when embedding.
 type Err error
 
 type HTTPEquivError interface {
