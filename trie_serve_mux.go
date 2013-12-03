@@ -58,7 +58,9 @@ func (mux *TrieServeMux) HandleNamespace(namespace string, handler http.Handler)
 // like this can be allowed.
 func (mux *TrieServeMux) Handler(r *http.Request) (http.Handler, string) {
 	params, handler, pattern := mux.find(r, strings.Split(r.URL.Path, "/")[1:])
-	r.URL.RawQuery = r.URL.RawQuery + "&" + params.Encode()
+	if 0 != len(params) {
+		r.URL.RawQuery = r.URL.RawQuery + "&" + params.Encode()
+	}
 	return handler, pattern
 }
 
