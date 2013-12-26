@@ -7,10 +7,15 @@ import (
 // An abstraction for wrapping request/response pairs to make it easier to
 // write additional pre/post processors
 
+// ResponseWriterWrapper can be optionally implemented by a PostProcessor in
+// order to wrap or replace http.ResponseWriter before it's passed to an
+// http.Handler
 type ResponseWriterWrapper interface {
 	WrapResponseWriter(http.ResponseWriter) http.ResponseWriter
 }
 
+// PostProcessor is similar to http.Handler but it is expected to not actually
+// interact with the request, merely perform additional accounting is needed
 type PostProcessor interface {
 	Process(http.ResponseWriter, *http.Request)
 }
