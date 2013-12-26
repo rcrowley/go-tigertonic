@@ -99,15 +99,6 @@ sh bootstrap.sh
 
 Then define your service.  The working [example](https://github.com/rcrowley/go-tigertonic/tree/master/example) may be a more convenient place to start.
 
-Requests that have bodies have types.  JSON is deserialized by adding `tigertonic.Marshaled` to your routes.
-
-```go
-type MyRequest struct {
-	ID     string      `json:"id"`
-	Stuff  interface{} `json:"stuff"`
-}
-```
-
 Responses, too, have types.  JSON is serialized by adding `tigertonic.Marshaled` to your routes.
 
 ```go
@@ -120,7 +111,7 @@ type MyResponse struct {
 Routes are just functions with a particular signature.  You control the request and response types.
 
 ```go
-func myHandler(u *url.URL, h http.Header, *MyRequest) (int, http.Header, *MyResponse, error) {
+func myHandler(u *url.URL, h http.Header, _ interface{}) (int, http.Header, *MyResponse, error) {
     return http.StatusOK, nil, &MyResponse{"ID", "STUFF"}, nil
 }
 ```
