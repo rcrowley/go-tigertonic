@@ -16,7 +16,11 @@ type Counter struct {
 
 // Counted returns an http.Handler that passes requests to an underlying
 // http.Handler and then counts the request via go-metrics.
-func Counted(handler http.Handler, name string, registry metrics.Registry) *Counter {
+func Counted(
+	handler http.Handler,
+	name string,
+	registry metrics.Registry,
+) *Counter {
 	counter := &Counter{
 		Counter: metrics.NewCounter(),
 		handler: handler,
