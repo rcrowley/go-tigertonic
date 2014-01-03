@@ -3,13 +3,10 @@ package tigertonic
 import (
 	"encoding/json"
 	"fmt"
-	"io"
 	"log"
 	"net/http"
 	"reflect"
 	"strings"
-	"unicode"
-	"unicode/utf8"
 )
 
 // Marshaler is an http.Handler that unmarshals JSON input, handles the request
@@ -111,7 +108,6 @@ func (m *Marshaler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	if "PATCH" == r.Method || "POST" == r.Method || "PUT" == r.Method {
 		if rq == nilRequest {
-			w.WriteHeader(http.StatusInternalServerError)
 			writeJSONError(w, NewMarshalerError(
 				"empty interface is not suitable for %s request bodies",
 				r.Method,
@@ -122,18 +118,19 @@ func (m *Marshaler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			r.Header.Get("Content-Type"),
 			"application/json",
 		) {
-			w.WriteHeader(http.StatusUnsupportedMediaType)
-			writeJSONError(w, NewMarshalerError(
+			writeJSONError(w, NewHTTPEquivError(NewMarshalerError(
 				"Content-Type header is %s, not application/json",
 				r.Header.Get("Content-Type"),
-			))
+			), http.StatusUnsupportedMediaType))
 			return
 		}
 		decoder := reflect.ValueOf(json.NewDecoder(r.Body))
 		out := decoder.MethodByName("Decode").Call([]reflect.Value{rq})
 		if !out[0].IsNil() {
-			w.WriteHeader(http.StatusBadRequest)
-			writeJSONError(w, out[0].Interface().(error))
+			writeJSONError(w, NewHTTPEquivError(
+				out[0].Interface().(error),
+				http.StatusBadRequest,
+			))
 			return
 		}
 		r.Body.Close()
@@ -174,14 +171,11 @@ func (m *Marshaler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	rs := out[2].Interface()
 	if !out[3].IsNil() {
 		err := out[3].Interface().(error)
-		if httpEquivError, ok := err.(HTTPEquivError); ok {
-			w.WriteHeader(httpEquivError.Status())
-		} else if http.StatusContinue > status {
-			w.WriteHeader(http.StatusInternalServerError)
+		if _, ok := err.(HTTPEquivError); ok {
+			writeJSONError(w, err)
 		} else {
-			w.WriteHeader(status)
+			writeJSONError(w, NewHTTPEquivError(err, status))
 		}
-		writeJSONError(w, err)
 		return
 	}
 	if nil != header {
@@ -211,35 +205,3 @@ func NewMarshalerError(format string, args ...interface{}) MarshalerError {
 func (e MarshalerError) Error() string { return string(e) }
 
 var nilRequest = reflect.ValueOf((*interface{})(nil))
-
-func acceptJSON(r *http.Request) bool {
-	accept := r.Header.Get("Accept")
-	if "" == accept {
-		return true
-	}
-	return strings.Contains(accept, "*/*") || strings.Contains(accept, "application/json")
-}
-
-func writeJSONError(w io.Writer, err error) {
-	var e string
-	if namedError, ok := err.(NamedError); ok {
-		e = namedError.Name()
-	} else if httpEquivError, ok := err.(HTTPEquivError); ok && SnakeCaseHTTPEquivErrors {
-		e = strings.Replace(strings.ToLower(http.StatusText(httpEquivError.Status())), " ", "_", -1)
-	} else {
-		t := reflect.TypeOf(err)
-		if reflect.Ptr == t.Kind() {
-			t = t.Elem()
-		}
-		e = t.String()
-		if r, _ := utf8.DecodeRuneInString(t.Name()); unicode.IsLower(r) {
-			e = "error"
-		}
-	}
-	if err := json.NewEncoder(w).Encode(map[string]string{
-		"description": err.Error(),
-		"error":       e,
-	}); nil != err {
-		log.Println(err)
-	}
-}

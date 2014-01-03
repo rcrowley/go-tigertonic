@@ -261,3 +261,25 @@ type HTTPVersionNotSupported struct {
 }
 
 func (err HTTPVersionNotSupported) Status() int { return http.StatusHTTPVersionNotSupported }
+
+type httpEquivError struct {
+	Err
+	status int
+}
+
+// Return a new HTTPEquivError whose Status method returns the given status.
+func NewHTTPEquivError(err error, status int) error {
+	return httpEquivError{err, status}
+}
+
+// Name implements the NamedError interface so that the underlying error's type
+// is communicated to the caller.
+func (err httpEquivError) Name() string { return errorName(err.Err) }
+// FIXME Maybe for all HTTPEquivErrors?
+
+func (err httpEquivError) Status() int {
+	if http.StatusContinue > err.status {
+		return http.StatusInternalServerError
+	}
+	return err.status
+}
