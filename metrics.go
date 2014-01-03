@@ -39,6 +39,136 @@ func (c *Counter) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	c.Inc(1)
 }
 
+// CounterByStatus is an http.Handler that counts responses by their HTTP
+// status via go-metrics.
+type CounterByStatus struct {
+	counters map[int]metrics.Counter
+	handler  http.Handler
+}
+
+// CountedByStatus returns an http.Handler that passes requests to an
+// underlying http.Handler and then counts the response by its HTTP status via
+// go-metrics.
+func CountedByStatus(
+	handler http.Handler,
+	name string,
+	registry metrics.Registry,
+) *CounterByStatus {
+	if nil == registry {
+		registry = metrics.DefaultRegistry
+	}
+	counters := map[int]metrics.Counter{
+		100: metrics.NewCounter(),
+		101: metrics.NewCounter(),
+		200: metrics.NewCounter(),
+		201: metrics.NewCounter(),
+		202: metrics.NewCounter(),
+		203: metrics.NewCounter(),
+		204: metrics.NewCounter(),
+		205: metrics.NewCounter(),
+		206: metrics.NewCounter(),
+		300: metrics.NewCounter(),
+		301: metrics.NewCounter(),
+		302: metrics.NewCounter(),
+		303: metrics.NewCounter(),
+		304: metrics.NewCounter(),
+		305: metrics.NewCounter(),
+		306: metrics.NewCounter(),
+		307: metrics.NewCounter(),
+		400: metrics.NewCounter(),
+		401: metrics.NewCounter(),
+		402: metrics.NewCounter(),
+		403: metrics.NewCounter(),
+		404: metrics.NewCounter(),
+		405: metrics.NewCounter(),
+		406: metrics.NewCounter(),
+		407: metrics.NewCounter(),
+		408: metrics.NewCounter(),
+		409: metrics.NewCounter(),
+		410: metrics.NewCounter(),
+		411: metrics.NewCounter(),
+		412: metrics.NewCounter(),
+		413: metrics.NewCounter(),
+		414: metrics.NewCounter(),
+		415: metrics.NewCounter(),
+		416: metrics.NewCounter(),
+		417: metrics.NewCounter(),
+		500: metrics.NewCounter(),
+		501: metrics.NewCounter(),
+		502: metrics.NewCounter(),
+		503: metrics.NewCounter(),
+		504: metrics.NewCounter(),
+		505: metrics.NewCounter(),
+	}
+	for status, counter := range counters {
+		registry.Register(fmt.Sprintf("%s-%d", name, status), counter)
+	}
+	return &CounterByStatus{
+		counters: counters,
+		handler:  handler,
+	}
+}
+
+// ServeHTTP passes the request to the underlying http.Handler and then counts
+// the response by its HTTP status via go-metrics.
+func (c *CounterByStatus) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	srw := &statusResponseWriter{ResponseWriter: w}
+	c.handler.ServeHTTP(srw, r)
+	c.counters[srw.Status].Inc(1)
+}
+
+// CounterByStatusXX is an http.Handler that counts responses by the first
+// digit of their HTTP status via go-metrics.
+type CounterByStatusXX struct {
+	counter1xx, counter2xx, counter3xx, counter4xx, counter5xx metrics.Counter
+	handler  http.Handler
+}
+
+// CountedByStatusXX returns an http.Handler that passes requests to an
+// underlying http.Handler and then counts the response by the first digit of
+// its HTTP status via go-metrics.
+func CountedByStatusXX(
+	handler http.Handler,
+	name string,
+	registry metrics.Registry,
+) *CounterByStatusXX {
+	if nil == registry {
+		registry = metrics.DefaultRegistry
+	}
+	c := &CounterByStatusXX{
+		counter1xx: metrics.NewCounter(),
+		counter2xx: metrics.NewCounter(),
+		counter3xx: metrics.NewCounter(),
+		counter4xx: metrics.NewCounter(),
+		counter5xx: metrics.NewCounter(),
+		handler:    handler,
+	}
+	registry.Register(fmt.Sprintf("%s-1xx", name), c.counter1xx)
+	registry.Register(fmt.Sprintf("%s-2xx", name), c.counter2xx)
+	registry.Register(fmt.Sprintf("%s-3xx", name), c.counter3xx)
+	registry.Register(fmt.Sprintf("%s-4xx", name), c.counter4xx)
+	registry.Register(fmt.Sprintf("%s-5xx", name), c.counter5xx)
+	return c
+}
+
+// ServeHTTP passes the request to the underlying http.Handler and then counts
+// the response by its HTTP status via go-metrics.
+func (c *CounterByStatusXX) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	srw := &statusResponseWriter{ResponseWriter: w}
+	c.handler.ServeHTTP(srw, r)
+	if srw.Status < 200 {
+		c.counter1xx.Inc(1)
+	} else if srw.Status < 300 {
+		c.counter2xx.Inc(1)
+	} else if srw.Status < 400 {
+		c.counter3xx.Inc(1)
+	} else if srw.Status < 500 {
+		c.counter4xx.Inc(1)
+	} else {
+		c.counter5xx.Inc(1)
+	}
+}
+
 // Timer is an http.Handler that counts requests via go-metrics.
 type Timer struct {
 	metrics.Timer
@@ -137,4 +267,14 @@ func StatusCodeCounted(handler http.Handler, name string, registry metrics.Regis
 		counter5xx: counters["5xx"],
 		handler:    handler,
 	})
+}
+
+type statusResponseWriter struct {
+	http.ResponseWriter
+	Status int
+}
+
+func (w *statusResponseWriter) WriteHeader(status int) {
+	w.ResponseWriter.WriteHeader(status)
+	w.Status = status
 }
