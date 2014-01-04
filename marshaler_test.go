@@ -130,7 +130,7 @@ func TestInternalServerError(t *testing.T) {
 	w := &testResponseWriter{}
 	r, _ := http.NewRequest("GET", "http://example.com/foo", nil)
 	r.Header.Set("Accept", "application/json")
-	Marshaled(func(u *url.URL, h http.Header, rq *testRequest) (int, http.Header, *testResponse, error) {
+	Marshaled(func(u *url.URL, h http.Header) (int, http.Header, *testResponse, error) {
 		return 0, nil, nil, errors.New("foo")
 	}).ServeHTTP(w, r)
 	if http.StatusInternalServerError != w.Status {
@@ -145,7 +145,7 @@ func TestHTTPEquivError(t *testing.T) {
 	w := &testResponseWriter{}
 	r, _ := http.NewRequest("GET", "http://example.com/foo", nil)
 	r.Header.Set("Accept", "application/json")
-	Marshaled(func(u *url.URL, h http.Header, rq *testRequest) (int, http.Header, *testResponse, error) {
+	Marshaled(func(u *url.URL, h http.Header) (int, http.Header, *testResponse, error) {
 		return 0, nil, nil, ServiceUnavailable{errors.New("foo")}
 	}).ServeHTTP(w, r)
 	if http.StatusServiceUnavailable != w.Status {
@@ -162,7 +162,7 @@ func TestSnakeCaseHTTPEquivError(t *testing.T) {
 	w := &testResponseWriter{}
 	r, _ := http.NewRequest("GET", "http://example.com/foo", nil)
 	r.Header.Set("Accept", "application/json")
-	Marshaled(func(u *url.URL, h http.Header, rq *testRequest) (int, http.Header, *testResponse, error) {
+	Marshaled(func(u *url.URL, h http.Header) (int, http.Header, *testResponse, error) {
 		return 0, nil, nil, ServiceUnavailable{errors.New("foo")}
 	}).ServeHTTP(w, r)
 	if http.StatusServiceUnavailable != w.Status {
@@ -177,7 +177,7 @@ func TestNamedError(t *testing.T) {
 	w := &testResponseWriter{}
 	r, _ := http.NewRequest("GET", "http://example.com/foo", nil)
 	r.Header.Set("Accept", "application/json")
-	Marshaled(func(u *url.URL, h http.Header, rq *testRequest) (int, http.Header, *testResponse, error) {
+	Marshaled(func(u *url.URL, h http.Header) (int, http.Header, *testResponse, error) {
 		return 0, nil, nil, testNamedError("foo")
 	}).ServeHTTP(w, r)
 	if http.StatusInternalServerError != w.Status {
@@ -257,7 +257,7 @@ func Test500OnMisconfiguredPost(t *testing.T) {
 	r, _ := http.NewRequest("POST", "http://example.com/foo", bytes.NewBufferString("anything"))
 	r.Header.Set("Accept", "application/json")
 	r.Header.Set("Content-Type", "application/json")
-	Marshaled(func(u *url.URL, h http.Header, _ interface{}) (int, http.Header, *testResponse, error) {
+	Marshaled(func(u *url.URL, h http.Header) (int, http.Header, *testResponse, error) {
 		return http.StatusOK, nil, &testResponse{"bar"}, nil
 	}).ServeHTTP(w, r)
 	if http.StatusInternalServerError != w.Status {
@@ -315,13 +315,9 @@ func testMarshaledPanic(i interface{}, t *testing.T) {
 
 type testNamedError string
 
-func (err testNamedError) Error() string {
-	return string(err)
-}
+func (err testNamedError) Error() string { return string(err) }
 
-func (err testNamedError) Name() string {
-	return string(err)
-}
+func (err testNamedError) Name() string { return string(err) }
 
 type testRequest struct {
 	Foo string `json:"foo"`

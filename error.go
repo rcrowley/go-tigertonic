@@ -19,9 +19,11 @@ func acceptJSON(r *http.Request) bool {
 	return strings.Contains(accept, "*/*") || strings.Contains(accept, "application/json")
 }
 
-func errorName(err error) string {
+func errorName(err error, fallback string) string {
 	if namedError, ok := err.(NamedError); ok {
-		return namedError.Name()
+		if name := namedError.Name(); "" != name {
+			return name
+		}
 	}
 	if httpEquivError, ok := err.(HTTPEquivError); ok && SnakeCaseHTTPEquivErrors {
 		return strings.Replace(
@@ -36,7 +38,7 @@ func errorName(err error) string {
 		t = t.Elem()
 	}
 	if r, _ := utf8.DecodeRuneInString(t.Name()); unicode.IsLower(r) {
-		return "error"
+		return fallback
 	}
 	return t.String()
 }
@@ -53,7 +55,7 @@ func writeJSONError(w http.ResponseWriter, err error) {
 	w.WriteHeader(errorStatus(err))
 	if jsonErr := json.NewEncoder(w).Encode(map[string]string{
 		"description": err.Error(),
-		"error":       errorName(err),
+		"error":       errorName(err, "error"),
 	}); nil != err {
 		log.Println(jsonErr)
 	}
@@ -62,5 +64,5 @@ func writeJSONError(w http.ResponseWriter, err error) {
 func writePlaintextError(w http.ResponseWriter, err error) {
 	w.Header().Set("Content-Type", "text/plain")
 	w.WriteHeader(errorStatus(err))
-	fmt.Fprintf(w, "%s: %s", errorName(err), err)
+	fmt.Fprintf(w, "%s: %s", errorName(err, "error"), err)
 }
