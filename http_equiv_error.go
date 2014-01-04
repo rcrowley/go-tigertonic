@@ -324,7 +324,7 @@ type ServiceUnavailable struct {
 	Err
 }
 
-func (err ServiceUnavailable) Name() string { return errorName(err.Err) }
+func (err ServiceUnavailable) Name() string { return errorName(err.Err, "") }
 
 func (err ServiceUnavailable) Status() int { return http.StatusServiceUnavailable }
 
