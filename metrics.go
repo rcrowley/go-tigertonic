@@ -120,7 +120,7 @@ func (c *CounterByStatus) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 // digit of their HTTP status via go-metrics.
 type CounterByStatusXX struct {
 	counter1xx, counter2xx, counter3xx, counter4xx, counter5xx metrics.Counter
-	handler  http.Handler
+	handler                                                    http.Handler
 }
 
 // CountedByStatusXX returns an http.Handler that passes requests to an
