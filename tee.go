@@ -5,16 +5,38 @@ import (
 	"net/http"
 )
 
+// TeeHeaderResponseWriter is an http.ResponseWriter that both writes and
+// records the response status and headers for post-processing.
+type TeeHeaderResponseWriter struct {
+	http.ResponseWriter
+	Status int
+}
+
+// NewTeeHeaderResponseWriter constructs a new TeeHeaderResponseWriter that
+// writes responses through another http.ResponseWriter and records the
+// response status and headers for post-processing.
+func NewTeeHeaderResponseWriter(w http.ResponseWriter) *TeeHeaderResponseWriter {
+	return &TeeHeaderResponseWriter{ResponseWriter: w}
+}
+
+// WriteHeader writes the response line and headers to the client via the
+// underlying http.ResponseWriter and records the status for post-processing.
+func (w *TeeHeaderResponseWriter) WriteHeader(status int) {
+	w.ResponseWriter.WriteHeader(status)
+	w.Status = status
+}
+
 // TeeResponseWriter is an http.ResponseWriter that both writes and records the
-// response for post-processing.
+// response status, headers, and body for post-processing.
 type TeeResponseWriter struct {
 	http.ResponseWriter
 	Body   bytes.Buffer
 	Status int
 }
 
-// NewTeeResponseWriter constructs a new TeeResponseWriter that wraps another
-// http.ResponseWriter.
+// NewTeeResponseWriter constructs a new TeeResponseWriter that writes
+// responses through another http.ResponseWriter and records the response
+// status, headers, and body for post-processing.
 func NewTeeResponseWriter(w http.ResponseWriter) *TeeResponseWriter {
 	return &TeeResponseWriter{ResponseWriter: w}
 }
