@@ -110,10 +110,10 @@ func CountedByStatus(
 
 // ServeHTTP passes the request to the underlying http.Handler and then counts
 // the response by its HTTP status via go-metrics.
-func (c *CounterByStatus) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	srw := &statusResponseWriter{ResponseWriter: w}
-	c.handler.ServeHTTP(srw, r)
-	c.counters[srw.Status].Inc(1)
+func (c *CounterByStatus) ServeHTTP(w0 http.ResponseWriter, r *http.Request) {
+	w := NewTeeHeaderResponseWriter(w0)
+	c.handler.ServeHTTP(w, r)
+	c.counters[w.Status].Inc(1)
 }
 
 // CounterByStatusXX is an http.Handler that counts responses by the first
@@ -152,16 +152,16 @@ func CountedByStatusXX(
 
 // ServeHTTP passes the request to the underlying http.Handler and then counts
 // the response by its HTTP status via go-metrics.
-func (c *CounterByStatusXX) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	srw := &statusResponseWriter{ResponseWriter: w}
-	c.handler.ServeHTTP(srw, r)
-	if srw.Status < 200 {
+func (c *CounterByStatusXX) ServeHTTP(w0 http.ResponseWriter, r *http.Request) {
+	w := NewTeeHeaderResponseWriter(w0)
+	c.handler.ServeHTTP(w, r)
+	if w.Status < 200 {
 		c.counter1xx.Inc(1)
-	} else if srw.Status < 300 {
+	} else if w.Status < 300 {
 		c.counter2xx.Inc(1)
-	} else if srw.Status < 400 {
+	} else if w.Status < 400 {
 		c.counter3xx.Inc(1)
-	} else if srw.Status < 500 {
+	} else if w.Status < 500 {
 		c.counter4xx.Inc(1)
 	} else {
 		c.counter5xx.Inc(1)
@@ -194,14 +194,4 @@ func Timed(handler http.Handler, name string, registry metrics.Registry) *Timer 
 func (t *Timer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	defer t.UpdateSince(time.Now())
 	t.handler.ServeHTTP(w, r)
-}
-
-type statusResponseWriter struct {
-	http.ResponseWriter
-	Status int
-}
-
-func (w *statusResponseWriter) WriteHeader(status int) {
-	w.ResponseWriter.WriteHeader(status)
-	w.Status = status
 }
