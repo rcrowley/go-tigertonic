@@ -27,7 +27,7 @@ func errorName(err error, fallback string) string {
 	}
 	if httpEquivError, ok := err.(HTTPEquivError); ok && SnakeCaseHTTPEquivErrors {
 		return strings.Replace(
-			strings.ToLower(http.StatusText(httpEquivError.Status())),
+			strings.ToLower(http.StatusText(httpEquivError.StatusCode())),
 			" ",
 			"_",
 			-1,
@@ -43,16 +43,16 @@ func errorName(err error, fallback string) string {
 	return t.String()
 }
 
-func errorStatus(err error) int {
+func errorStatusCode(err error) int {
 	if httpEquivError, ok := err.(HTTPEquivError); ok {
-		return httpEquivError.Status()
+		return httpEquivError.StatusCode()
 	}
 	return http.StatusInternalServerError
 }
 
 func writeJSONError(w http.ResponseWriter, err error) {
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(errorStatus(err))
+	w.WriteHeader(errorStatusCode(err))
 	if jsonErr := json.NewEncoder(w).Encode(map[string]string{
 		"description": err.Error(),
 		"error":       errorName(err, "error"),
@@ -63,6 +63,6 @@ func writeJSONError(w http.ResponseWriter, err error) {
 
 func writePlaintextError(w http.ResponseWriter, err error) {
 	w.Header().Set("Content-Type", "text/plain")
-	w.WriteHeader(errorStatus(err))
+	w.WriteHeader(errorStatusCode(err))
 	fmt.Fprintf(w, "%s: %s", errorName(err, "error"), err)
 }

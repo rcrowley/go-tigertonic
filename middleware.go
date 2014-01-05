@@ -37,9 +37,9 @@ type firstResponseWriter struct {
 	written bool
 }
 
-func (w *firstResponseWriter) WriteHeader(status int) {
+func (w *firstResponseWriter) WriteHeader(code int) {
 	w.written = true
-	w.ResponseWriter.WriteHeader(status)
+	w.ResponseWriter.WriteHeader(code)
 }
 
 type ifHandler func(*http.Request) (http.Header, error)

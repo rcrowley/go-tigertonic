@@ -25,8 +25,8 @@ func TestCORSOPTIONS(t *testing.T) {
 	r, _ := http.NewRequest("OPTIONS", "http://example.com/baz", nil)
 	r.Header.Set(CORSRequestMethod, "GET")
 	mux.ServeHTTP(w, r)
-	if http.StatusOK != w.Status {
-		t.Fatal(w.Status)
+	if http.StatusOK != w.StatusCode {
+		t.Fatal(w.StatusCode)
 	}
 	if "GET, HEAD, OPTIONS" != w.Header().Get(CORSAllowMethods) {
 		t.Fatal(w.Header().Get("Allow"))
@@ -38,8 +38,8 @@ func TestCORSOPTIONS(t *testing.T) {
 	r.Header.Set(CORSRequestOrigin, "http://baddomain.com")
 	r.Header.Set(CORSRequestMethod, "GET")
 	mux.ServeHTTP(w, r)
-	if http.StatusOK != w.Status {
-		t.Fatal(w.Status)
+	if http.StatusOK != w.StatusCode {
+		t.Fatal(w.StatusCode)
 	}
 	if "null" != w.Header().Get(CORSAllowOrigin) {
 		t.Fatal(w.Header().Get(CORSAllowOrigin))
@@ -51,8 +51,8 @@ func TestCORSOPTIONS(t *testing.T) {
 	r.Header.Set(CORSRequestOrigin, "http://baddomain.com")
 	r.Header.Set(CORSRequestMethod, "GET")
 	mux.ServeHTTP(w, r)
-	if http.StatusOK != w.Status {
-		t.Fatal(w.Status)
+	if http.StatusOK != w.StatusCode {
+		t.Fatal(w.StatusCode)
 	}
 	if "*" != w.Header().Get(CORSAllowOrigin) {
 		t.Fatal(w.Header().Get(CORSAllowOrigin))
@@ -64,8 +64,8 @@ func TestCORSOPTIONS(t *testing.T) {
 	r.Header.Set(CORSRequestOrigin, "http://gooddomain.com")
 	r.Header.Set(CORSRequestMethod, "GET")
 	mux.ServeHTTP(w, r)
-	if http.StatusOK != w.Status {
-		t.Fatal(w.Status)
+	if http.StatusOK != w.StatusCode {
+		t.Fatal(w.StatusCode)
 	}
 	if "http://gooddomain.com" != w.Header().Get(CORSAllowOrigin) {
 		t.Fatal(w.Header().Get(CORSAllowOrigin))
@@ -77,8 +77,8 @@ func TestCORSOPTIONS(t *testing.T) {
 	r.Header.Set(CORSRequestMethod, "GET")
 	r.Header.Add(CORSRequestHeaders, "X-Pizza-Fax")
 	mux.ServeHTTP(w, r)
-	if http.StatusOK != w.Status {
-		t.Fatal(w.Status)
+	if http.StatusOK != w.StatusCode {
+		t.Fatal(w.StatusCode)
 	}
 	t.Log(w.Header())
 	if "X-Pizza-Fax" != w.Header().Get(CORSAllowHeaders) {
@@ -97,8 +97,8 @@ func TestCORSOrigin(t *testing.T) {
 	r.Header.Set("Accept", "application/json")
 	r.Header.Set(CORSRequestOrigin, "http://gooddomain.com")
 	mux.ServeHTTP(w, r)
-	if http.StatusOK != w.Status {
-		t.Fatal(w.Status)
+	if http.StatusOK != w.StatusCode {
+		t.Fatal(w.StatusCode)
 	}
 	if "*" != w.Header().Get(CORSAllowOrigin) {
 		t.Fatal(w.Header().Get(CORSAllowOrigin))
@@ -110,8 +110,8 @@ func TestCORSOrigin(t *testing.T) {
 	r.Header.Set("Accept", "application/json")
 	r.Header.Set(CORSRequestOrigin, "http://gooddomain.com")
 	mux.ServeHTTP(w, r)
-	if http.StatusOK != w.Status {
-		t.Fatal(w.Status)
+	if http.StatusOK != w.StatusCode {
+		t.Fatal(w.StatusCode)
 	}
 	if "http://gooddomain.com" != w.Header().Get(CORSAllowOrigin) {
 		t.Fatal(w.Header().Get(CORSAllowOrigin))
@@ -129,8 +129,8 @@ func TestCORSHeader(t *testing.T) {
 	r.Header.Set("Accept", "application/json")
 	r.Header.Set(CORSRequestHeaders, "X-Header-You-Dont-Want")
 	mux.ServeHTTP(w, r)
-	if http.StatusOK != w.Status {
-		t.Fatal(w.Status)
+	if http.StatusOK != w.StatusCode {
+		t.Fatal(w.StatusCode)
 	}
 	if "" != w.Header().Get(CORSAllowHeaders) {
 		t.Fatal(w.Header().Get(CORSAllowOrigin))
@@ -142,8 +142,8 @@ func TestCORSHeader(t *testing.T) {
 	r.Header.Set("Accept", "application/json")
 	r.Header.Set(CORSRequestHeaders, "X-Fancy-Header")
 	mux.ServeHTTP(w, r)
-	if http.StatusOK != w.Status {
-		t.Fatal(w.Status)
+	if http.StatusOK != w.StatusCode {
+		t.Fatal(w.StatusCode)
 	}
 	if "X-Fancy-Header" != w.Header().Get(CORSAllowHeaders) {
 		t.Fatal(w.Header().Get(CORSAllowOrigin))

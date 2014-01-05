@@ -166,7 +166,7 @@ func (m *Marshaler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	default:
 		panic(m.v.Type())
 	}
-	status := int(out[0].Int())
+	code := int(out[0].Int())
 	header := out[1].Interface().(http.Header)
 	rs := out[2].Interface()
 	if !out[3].IsNil() {
@@ -174,7 +174,7 @@ func (m *Marshaler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		if _, ok := err.(HTTPEquivError); ok {
 			writeJSONError(w, err)
 		} else {
-			writeJSONError(w, NewHTTPEquivError(err, status))
+			writeJSONError(w, NewHTTPEquivError(err, code))
 		}
 		return
 	}
@@ -186,8 +186,8 @@ func (m *Marshaler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 	}
-	w.WriteHeader(status)
-	if nil != rs && http.StatusNoContent != status {
+	w.WriteHeader(code)
+	if nil != rs && http.StatusNoContent != code {
 		if err := json.NewEncoder(w).Encode(rs); nil != err {
 			log.Println(err)
 		}

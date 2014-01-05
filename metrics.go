@@ -99,8 +99,8 @@ func CountedByStatus(
 		504: metrics.NewCounter(),
 		505: metrics.NewCounter(),
 	}
-	for status, counter := range counters {
-		registry.Register(fmt.Sprintf("%s-%d", name, status), counter)
+	for code, counter := range counters {
+		registry.Register(fmt.Sprintf("%s-%d", name, code), counter)
 	}
 	return &CounterByStatus{
 		counters: counters,
@@ -113,7 +113,7 @@ func CountedByStatus(
 func (c *CounterByStatus) ServeHTTP(w0 http.ResponseWriter, r *http.Request) {
 	w := NewTeeHeaderResponseWriter(w0)
 	c.handler.ServeHTTP(w, r)
-	c.counters[w.Status].Inc(1)
+	c.counters[w.StatusCode].Inc(1)
 }
 
 // CounterByStatusXX is an http.Handler that counts responses by the first
@@ -155,13 +155,13 @@ func CountedByStatusXX(
 func (c *CounterByStatusXX) ServeHTTP(w0 http.ResponseWriter, r *http.Request) {
 	w := NewTeeHeaderResponseWriter(w0)
 	c.handler.ServeHTTP(w, r)
-	if w.Status < 200 {
+	if w.StatusCode < 200 {
 		c.counter1xx.Inc(1)
-	} else if w.Status < 300 {
+	} else if w.StatusCode < 300 {
 		c.counter2xx.Inc(1)
-	} else if w.Status < 400 {
+	} else if w.StatusCode < 400 {
 		c.counter3xx.Inc(1)
-	} else if w.Status < 500 {
+	} else if w.StatusCode < 500 {
 		c.counter4xx.Inc(1)
 	} else {
 		c.counter5xx.Inc(1)

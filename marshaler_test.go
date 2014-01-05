@@ -77,8 +77,8 @@ func TestNotAcceptable(t *testing.T) {
 	Marshaled(func(u *url.URL, h http.Header, rq *testRequest) (int, http.Header, *testResponse, error) {
 		return http.StatusNoContent, nil, nil, nil
 	}).ServeHTTP(w, r)
-	if http.StatusNotAcceptable != w.Status {
-		t.Fatal(w.Status)
+	if http.StatusNotAcceptable != w.StatusCode {
+		t.Fatal(w.StatusCode)
 	}
 }
 
@@ -89,8 +89,8 @@ func TestUnsupportedMediaType(t *testing.T) {
 	Marshaled(func(u *url.URL, h http.Header, rq *testRequest) (int, http.Header, *testResponse, error) {
 		return http.StatusNoContent, nil, nil, nil
 	}).ServeHTTP(w, r)
-	if http.StatusUnsupportedMediaType != w.Status {
-		t.Fatal(w.Status)
+	if http.StatusUnsupportedMediaType != w.StatusCode {
+		t.Fatal(w.StatusCode)
 	}
 }
 
@@ -102,8 +102,8 @@ func TestBadRequest(t *testing.T) {
 	Marshaled(func(u *url.URL, h http.Header, rq *testRequest) (int, http.Header, *testResponse, error) {
 		return http.StatusNoContent, nil, nil, nil
 	}).ServeHTTP(w, r)
-	if http.StatusBadRequest != w.Status {
-		t.Fatal(w.Status)
+	if http.StatusBadRequest != w.StatusCode {
+		t.Fatal(w.StatusCode)
 	}
 	if "{\"description\":\"EOF\",\"error\":\"error\"}\n" != w.Body.String() {
 		t.Fatal(w.Body.String())
@@ -118,8 +118,8 @@ func TestBadRequestSyntaxError(t *testing.T) {
 	Marshaled(func(u *url.URL, h http.Header, rq *testRequest) (int, http.Header, *testResponse, error) {
 		return http.StatusNoContent, nil, nil, nil
 	}).ServeHTTP(w, r)
-	if http.StatusBadRequest != w.Status {
-		t.Fatal(w.Status)
+	if http.StatusBadRequest != w.StatusCode {
+		t.Fatal(w.StatusCode)
 	}
 	if "{\"description\":\"invalid character '}' looking for beginning of value\",\"error\":\"json.SyntaxError\"}\n" != w.Body.String() {
 		t.Fatal(w.Body.String())
@@ -133,8 +133,8 @@ func TestInternalServerError(t *testing.T) {
 	Marshaled(func(u *url.URL, h http.Header) (int, http.Header, *testResponse, error) {
 		return 0, nil, nil, errors.New("foo")
 	}).ServeHTTP(w, r)
-	if http.StatusInternalServerError != w.Status {
-		t.Fatal(w.Status)
+	if http.StatusInternalServerError != w.StatusCode {
+		t.Fatal(w.StatusCode)
 	}
 	if "{\"description\":\"foo\",\"error\":\"error\"}\n" != w.Body.String() {
 		t.Fatal(w.Body.String())
@@ -148,8 +148,8 @@ func TestHTTPEquivError(t *testing.T) {
 	Marshaled(func(u *url.URL, h http.Header) (int, http.Header, *testResponse, error) {
 		return 0, nil, nil, ServiceUnavailable{errors.New("foo")}
 	}).ServeHTTP(w, r)
-	if http.StatusServiceUnavailable != w.Status {
-		t.Fatal(w.Status)
+	if http.StatusServiceUnavailable != w.StatusCode {
+		t.Fatal(w.StatusCode)
 	}
 	if "{\"description\":\"foo\",\"error\":\"tigertonic.ServiceUnavailable\"}\n" != w.Body.String() {
 		t.Fatal(w.Body.String())
@@ -165,8 +165,8 @@ func TestSnakeCaseHTTPEquivError(t *testing.T) {
 	Marshaled(func(u *url.URL, h http.Header) (int, http.Header, *testResponse, error) {
 		return 0, nil, nil, ServiceUnavailable{errors.New("foo")}
 	}).ServeHTTP(w, r)
-	if http.StatusServiceUnavailable != w.Status {
-		t.Fatal(w.Status)
+	if http.StatusServiceUnavailable != w.StatusCode {
+		t.Fatal(w.StatusCode)
 	}
 	if "{\"description\":\"foo\",\"error\":\"service_unavailable\"}\n" != w.Body.String() {
 		t.Fatal(w.Body.String())
@@ -180,8 +180,8 @@ func TestNamedError(t *testing.T) {
 	Marshaled(func(u *url.URL, h http.Header) (int, http.Header, *testResponse, error) {
 		return 0, nil, nil, testNamedError("foo")
 	}).ServeHTTP(w, r)
-	if http.StatusInternalServerError != w.Status {
-		t.Fatal(w.Status)
+	if http.StatusInternalServerError != w.StatusCode {
+		t.Fatal(w.StatusCode)
 	}
 	if "{\"description\":\"foo\",\"error\":\"foo\"}\n" != w.Body.String() {
 		t.Fatal(w.Body.String())
@@ -195,8 +195,8 @@ func TestNoContent(t *testing.T) {
 	Marshaled(func(u *url.URL, h http.Header, rq *testRequest) (int, http.Header, *testResponse, error) {
 		return http.StatusNoContent, nil, nil, nil
 	}).ServeHTTP(w, r)
-	if http.StatusNoContent != w.Status {
-		t.Fatal(w.Status)
+	if http.StatusNoContent != w.StatusCode {
+		t.Fatal(w.StatusCode)
 	}
 }
 
@@ -260,7 +260,7 @@ func Test500OnMisconfiguredPost(t *testing.T) {
 	Marshaled(func(u *url.URL, h http.Header) (int, http.Header, *testResponse, error) {
 		return http.StatusOK, nil, &testResponse{"bar"}, nil
 	}).ServeHTTP(w, r)
-	if http.StatusInternalServerError != w.Status {
+	if http.StatusInternalServerError != w.StatusCode {
 		t.Fatalf("Server did not 500 when trying to handle a POST to a handler with interface{} as the request type")
 	}
 }
@@ -273,8 +273,8 @@ func TestNonPointerMapBody(t *testing.T) {
 	Logged(Marshaled(func(u *url.URL, h http.Header, m map[string]string) (int, http.Header, string, error) {
 		return http.StatusOK, nil, m["a"], nil
 	}), nil).ServeHTTP(w, r)
-	if http.StatusOK != w.Status {
-		t.Fatalf("Server responded %d to a post with a non-pointer map body", w.Status)
+	if http.StatusOK != w.StatusCode {
+		t.Fatalf("Server responded %d to a post with a non-pointer map body", w.StatusCode)
 	}
 	var result string
 	_ = json.Unmarshal(w.Body.Bytes(), &result)
@@ -291,8 +291,8 @@ func TestNonPointerSliceBody(t *testing.T) {
 	Logged(Marshaled(func(u *url.URL, h http.Header, s []string) (int, http.Header, string, error) {
 		return http.StatusOK, nil, s[1], nil
 	}), nil).ServeHTTP(w, r)
-	if http.StatusOK != w.Status {
-		t.Fatalf("Server responded %d to a post with a non-pointer map body", w.Status)
+	if http.StatusOK != w.StatusCode {
+		t.Fatalf("Server responded %d to a post with a non-pointer map body", w.StatusCode)
 	}
 	var result string
 	_ = json.Unmarshal(w.Body.Bytes(), &result)

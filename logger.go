@@ -56,7 +56,7 @@ func (al *ApacheLogger) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		r.Method,
 		r.RequestURI,
 		r.Proto,
-		aw.Status,
+		aw.StatusCode,
 		aw.Size,
 		referer,
 		userAgent,
@@ -158,12 +158,12 @@ func NewRequestID() RequestID {
 
 type apacheLoggerResponseWriter struct {
 	http.ResponseWriter
-	Size   int
-	Status int
+	Size       int
+	StatusCode int
 }
 
 func (w *apacheLoggerResponseWriter) Write(p []byte) (int, error) {
-	if w.Status == 0 {
+	if w.StatusCode == 0 {
 		w.WriteHeader(http.StatusOK)
 	}
 	size, err := w.ResponseWriter.Write(p)
@@ -171,9 +171,9 @@ func (w *apacheLoggerResponseWriter) Write(p []byte) (int, error) {
 	return size, err
 }
 
-func (w *apacheLoggerResponseWriter) WriteHeader(status int) {
-	w.ResponseWriter.WriteHeader(status)
-	w.Status = status
+func (w *apacheLoggerResponseWriter) WriteHeader(code int) {
+	w.ResponseWriter.WriteHeader(code)
+	w.StatusCode = code
 }
 
 type readCloser struct {
@@ -210,14 +210,14 @@ func (w *loggerResponseWriter) Write(p []byte) (int, error) {
 	return w.ResponseWriter.Write(p)
 }
 
-func (w *loggerResponseWriter) WriteHeader(status int) {
+func (w *loggerResponseWriter) WriteHeader(code int) {
 	w.wroteHeader = true
 	w.Printf(
 		"%s < %s %d %s\n",
 		w.requestID,
 		w.request.Proto,
-		status,
-		http.StatusText(status),
+		code,
+		http.StatusText(code),
 	)
 	for name, values := range w.Header() {
 		for _, value := range values {
@@ -225,5 +225,5 @@ func (w *loggerResponseWriter) WriteHeader(status int) {
 		}
 	}
 	w.Println(w.requestID, "<")
-	w.ResponseWriter.WriteHeader(status)
+	w.ResponseWriter.WriteHeader(code)
 }
