@@ -39,15 +39,15 @@ func (c *Counter) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 // CounterByStatus is an http.Handler that counts responses by their HTTP
-// status via go-metrics.
+// status code via go-metrics.
 type CounterByStatus struct {
 	counters map[int]metrics.Counter
 	handler  http.Handler
 }
 
 // CountedByStatus returns an http.Handler that passes requests to an
-// underlying http.Handler and then counts the response by its HTTP status via
-// go-metrics.
+// underlying http.Handler and then counts the response by its HTTP status code
+// via go-metrics.
 func CountedByStatus(
 	handler http.Handler,
 	name string,
@@ -109,7 +109,7 @@ func CountedByStatus(
 }
 
 // ServeHTTP passes the request to the underlying http.Handler and then counts
-// the response by its HTTP status via go-metrics.
+// the response by its HTTP status code via go-metrics.
 func (c *CounterByStatus) ServeHTTP(w0 http.ResponseWriter, r *http.Request) {
 	w := NewTeeHeaderResponseWriter(w0)
 	c.handler.ServeHTTP(w, r)
@@ -117,7 +117,7 @@ func (c *CounterByStatus) ServeHTTP(w0 http.ResponseWriter, r *http.Request) {
 }
 
 // CounterByStatusXX is an http.Handler that counts responses by the first
-// digit of their HTTP status via go-metrics.
+// digit of their HTTP status code via go-metrics.
 type CounterByStatusXX struct {
 	counter1xx, counter2xx, counter3xx, counter4xx, counter5xx metrics.Counter
 	handler                                                    http.Handler
@@ -125,7 +125,7 @@ type CounterByStatusXX struct {
 
 // CountedByStatusXX returns an http.Handler that passes requests to an
 // underlying http.Handler and then counts the response by the first digit of
-// its HTTP status via go-metrics.
+// its HTTP status code via go-metrics.
 func CountedByStatusXX(
 	handler http.Handler,
 	name string,
@@ -151,7 +151,7 @@ func CountedByStatusXX(
 }
 
 // ServeHTTP passes the request to the underlying http.Handler and then counts
-// the response by its HTTP status via go-metrics.
+// the response by its HTTP status code via go-metrics.
 func (c *CounterByStatusXX) ServeHTTP(w0 http.ResponseWriter, r *http.Request) {
 	w := NewTeeHeaderResponseWriter(w0)
 	c.handler.ServeHTTP(w, r)
