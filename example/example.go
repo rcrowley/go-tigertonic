@@ -38,7 +38,7 @@ func init() {
 
 	// We'll use this CORSBuilder to set Access-Control-Allow-Origin headers
 	// on certain endpoints.
-	cors := tigertonic.NewCORSBuilder().SetAllowedOrigin("*")
+	cors := tigertonic.NewCORSBuilder().AddAllowedOrigins("*")
 
 	// Register endpoints defined in top-level functions below with example
 	// uses of Timed go-metrics wrapper.
