@@ -15,8 +15,8 @@ func TestHTTPBasicAuthAuthorized(t *testing.T) {
 		"Tiger Tonic",
 		NotFoundHandler{},
 	).ServeHTTP(w, r)
-	if http.StatusNotFound != w.Status {
-		t.Fatal(w.Status)
+	if http.StatusNotFound != w.StatusCode {
+		t.Fatal(w.StatusCode)
 	}
 }
 
@@ -29,8 +29,8 @@ func TestHTTPBasicAuthBase64Error(t *testing.T) {
 		"Tiger Tonic",
 		NotFoundHandler{},
 	).ServeHTTP(w, r)
-	if http.StatusUnauthorized != w.Status {
-		t.Fatal(w.Status)
+	if http.StatusUnauthorized != w.StatusCode {
+		t.Fatal(w.StatusCode)
 	}
 }
 
@@ -43,8 +43,8 @@ func TestHTTPBasicAuthMalformed(t *testing.T) {
 		"Tiger Tonic",
 		NotFoundHandler{},
 	).ServeHTTP(w, r)
-	if http.StatusUnauthorized != w.Status {
-		t.Fatal(w.Status)
+	if http.StatusUnauthorized != w.StatusCode {
+		t.Fatal(w.StatusCode)
 	}
 }
 
@@ -57,8 +57,8 @@ func TestHTTPBasicAuthUnauthorized(t *testing.T) {
 		"Tiger Tonic",
 		NotFoundHandler{},
 	).ServeHTTP(w, r)
-	if http.StatusUnauthorized != w.Status {
-		t.Fatal(w.Status)
+	if http.StatusUnauthorized != w.StatusCode {
+		t.Fatal(w.StatusCode)
 	}
 }
 
@@ -70,7 +70,7 @@ func TestHTTPBasicAuthUnspecified(t *testing.T) {
 		"Tiger Tonic",
 		NotFoundHandler{},
 	).ServeHTTP(w, r)
-	if http.StatusUnauthorized != w.Status {
-		t.Fatal(w.Status)
+	if http.StatusUnauthorized != w.StatusCode {
+		t.Fatal(w.StatusCode)
 	}
 }

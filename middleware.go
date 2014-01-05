@@ -1,9 +1,6 @@
 package tigertonic
 
-import (
-	"fmt"
-	"net/http"
-)
+import "net/http"
 
 // FirstHandler is an http.Handler that, for each handler in its slice of
 // handlers, calls ServeHTTP until the first one that calls w.WriteHeader.
@@ -40,9 +37,9 @@ type firstResponseWriter struct {
 	written bool
 }
 
-func (w *firstResponseWriter) WriteHeader(status int) {
+func (w *firstResponseWriter) WriteHeader(code int) {
 	w.written = true
-	w.ResponseWriter.WriteHeader(status)
+	w.ResponseWriter.WriteHeader(code)
 }
 
 type ifHandler func(*http.Request) (http.Header, error)
@@ -54,21 +51,11 @@ func (ih ifHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set(name, value)
 		}
 	}
-	if nil == err {
-		return
-	}
-	description := err.Error()
-	status := http.StatusInternalServerError
-	if httpEquivError, ok := err.(HTTPEquivError); ok {
-		status = httpEquivError.Status()
-	}
-	if acceptJSON(r) {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(status)
-		writeJSONError(w, err)
-	} else {
-		w.Header().Set("Content-Type", "text/plain")
-		w.WriteHeader(status)
-		fmt.Fprint(w, description)
+	if nil != err {
+		if acceptJSON(r) {
+			writeJSONError(w, err)
+		} else {
+			writePlaintextError(w, err)
+		}
 	}
 }

@@ -10,8 +10,8 @@ func TestNotFound(t *testing.T) {
 	w := &testResponseWriter{}
 	r, _ := http.NewRequest("GET", "http://example.com/", nil)
 	mux.ServeHTTP(w, r)
-	if http.StatusNotFound != w.Status {
-		t.Fatal(w.Status)
+	if http.StatusNotFound != w.StatusCode {
+		t.Fatal(w.StatusCode)
 	}
 }
 
@@ -21,8 +21,8 @@ func TestMethodNotAllowed(t *testing.T) {
 	w := &testResponseWriter{}
 	r, _ := http.NewRequest("GET", "http://example.com/", nil)
 	mux.ServeHTTP(w, r)
-	if http.StatusMethodNotAllowed != w.Status {
-		t.Fatal(w.Status)
+	if http.StatusMethodNotAllowed != w.StatusCode {
+		t.Fatal(w.StatusCode)
 	}
 }
 
@@ -35,8 +35,8 @@ func TestOPTIONS(t *testing.T) {
 	r.Header.Set(CORSRequestMethod, "GET")
 
 	mux.ServeHTTP(w, r)
-	if http.StatusOK != w.Status {
-		t.Fatal(w.Status)
+	if http.StatusOK != w.StatusCode {
+		t.Fatal(w.StatusCode)
 	}
 	if "GET, HEAD, OPTIONS" != w.Header().Get("Allow") {
 		t.Fatal(w.Header().Get("Allow"))
@@ -48,8 +48,8 @@ func TestOPTIONS(t *testing.T) {
 	w = &testResponseWriter{}
 	r, _ = http.NewRequest("OPTIONS", "http://example.com/bar", nil)
 	mux.ServeHTTP(w, r)
-	if http.StatusOK != w.Status {
-		t.Fatal(w.Status)
+	if http.StatusOK != w.StatusCode {
+		t.Fatal(w.StatusCode)
 	}
 	if "OPTIONS, POST" != w.Header().Get("Allow") {
 		t.Fatal(w.Header().Get("Allow"))
@@ -64,8 +64,8 @@ func TestRoot(t *testing.T) {
 	w := &testResponseWriter{}
 	r, _ := http.NewRequest("GET", "http://example.com/", nil)
 	mux.ServeHTTP(w, r)
-	if http.StatusNoContent != w.Status {
-		t.Fatal(w.Status)
+	if http.StatusNoContent != w.StatusCode {
+		t.Fatal(w.StatusCode)
 	}
 }
 
@@ -77,8 +77,8 @@ func TestRecurse(t *testing.T) {
 	w := &testResponseWriter{}
 	r, _ := http.NewRequest("GET", "http://example.com/foo/bar/baz", nil)
 	mux.ServeHTTP(w, r)
-	if http.StatusNoContent != w.Status {
-		t.Fatal(w.Status)
+	if http.StatusNoContent != w.StatusCode {
+		t.Fatal(w.StatusCode)
 	}
 }
 
@@ -100,8 +100,8 @@ func TestParams(t *testing.T) {
 	w := &testResponseWriter{}
 	r, _ := http.NewRequest("GET", "http://example.com/bar/foo?baz=quux", nil)
 	mux.ServeHTTP(w, r)
-	if http.StatusNoContent != w.Status {
-		t.Fatal(w.Status)
+	if http.StatusNoContent != w.StatusCode {
+		t.Fatal(w.StatusCode)
 	}
 }
 
@@ -117,8 +117,8 @@ func TestNamespace(t *testing.T) {
 	w := &testResponseWriter{}
 	r, _ := http.NewRequest("GET", "http://example.com/foo/bar", nil)
 	nsMux.ServeHTTP(w, r)
-	if http.StatusOK != w.Status {
-		t.Fatal(w.Status)
+	if http.StatusOK != w.StatusCode {
+		t.Fatal(w.StatusCode)
 	}
 	if "/bar" != w.Body.String() {
 		t.Fatal(w.Body.String())
@@ -143,8 +143,8 @@ func TestNamespaceParam(t *testing.T) {
 	w := &testResponseWriter{}
 	r, _ := http.NewRequest("GET", "http://example.com/bar/bar", nil)
 	nsMux.ServeHTTP(w, r)
-	if http.StatusOK != w.Status {
-		t.Fatal(w.Status)
+	if http.StatusOK != w.StatusCode {
+		t.Fatal(w.StatusCode)
 	}
 	if "/bar" != w.Body.String() {
 		t.Fatal(w.Body.String())

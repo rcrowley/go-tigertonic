@@ -38,7 +38,7 @@ func init() {
 
 	// We'll use this CORSBuilder to set Access-Control-Allow-Origin headers
 	// on certain endpoints.
-	cors := tigertonic.NewCORSBuilder().SetAllowedOrigin("*")
+	cors := tigertonic.NewCORSBuilder().AddAllowedOrigins("*")
 
 	// Register endpoints defined in top-level functions below with example
 	// uses of Timed go-metrics wrapper.
@@ -132,18 +132,24 @@ func main() {
 	server := tigertonic.NewServer(
 		*listen,
 
-		// Example use of request logging, redacting the word SECRET wherever
-		// it appears.
-		tigertonic.Logged(
+		// Example use of go-metrics to track HTTP status codes.
+		tigertonic.CountedByStatus(
 
-			// Example use of WithContext, which is required in order to use
-			// Context within any handlers.  The second argument is a zero
-			// value of the type to be used for all actual request contexts.
-			tigertonic.WithContext(hMux, context{}),
+			// Example use of request logging, redacting the word SECRET wherever
+			// it appears.
+			tigertonic.Logged(
 
-			func(s string) string {
-				return strings.Replace(s, "SECRET", "REDACTED", -1)
-			},
+				// Example use of WithContext, which is required in order to use
+				// Context within any handlers.  The second argument is a zero
+				// value of the type to be used for all actual request contexts.
+				tigertonic.WithContext(hMux, context{}),
+
+				func(s string) string {
+					return strings.Replace(s, "SECRET", "REDACTED", -1)
+				},
+			),
+			"http",
+			nil,
 		),
 	)
 	var err error

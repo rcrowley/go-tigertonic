@@ -13,8 +13,8 @@ func TestHostnameFound(t *testing.T) {
 	w := &testResponseWriter{}
 	r, _ := http.NewRequest("GET", "http://example.com/", nil)
 	mux.ServeHTTP(w, r)
-	if http.StatusNoContent != w.Status {
-		t.Fatal(w.Status)
+	if http.StatusNoContent != w.StatusCode {
+		t.Fatal(w.StatusCode)
 	}
 }
 
@@ -27,8 +27,8 @@ func TestHostnameFoundInURL(t *testing.T) {
 	r, _ := http.NewRequest("GET", "http://example.com/", nil)
 	r.Host = ""
 	mux.ServeHTTP(w, r)
-	if http.StatusNoContent != w.Status {
-		t.Fatal(w.Status)
+	if http.StatusNoContent != w.StatusCode {
+		t.Fatal(w.StatusCode)
 	}
 }
 
@@ -37,7 +37,7 @@ func TestHostnameNotFound(t *testing.T) {
 	w := &testResponseWriter{}
 	r, _ := http.NewRequest("GET", "http://example.com/", nil)
 	mux.ServeHTTP(w, r)
-	if http.StatusNotFound != w.Status {
-		t.Fatal(w.Status)
+	if http.StatusNotFound != w.StatusCode {
+		t.Fatal(w.StatusCode)
 	}
 }
