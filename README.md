@@ -73,6 +73,11 @@ Call `tigertonic.First` with a variadic slice of `http.Handler`s.  It will call 
 
 `tigertonic.If` expresses the most common use of `tigertonic.First` more naturally.  Call `tigertonic.If` with a `func(*http.Request) (http.Header, error)` and an `http.Handler`.  It will conditionally call the handler unless the function returns an error.  In that case, the error is used to create a response.
 
+`tigertonic.PostProcessed` and `tigertonic.TeeResponseWriter`
+-------------------------------------------------------------
+
+`tigertonic.PostProcessed` uses a `tigertonic.TeeResponseWriter` to record the response and call a `func(*http.Request, *http.Response)` after the response is written to the client to allow post-processing requests and responses.
+
 `tigertonic.HTTPBasicAuth`
 --------------------------
 
