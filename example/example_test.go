@@ -7,7 +7,7 @@ import (
 )
 
 func TestCreate(t *testing.T) {
-	s, h, rs, err := create(
+	code, header, response, err := create(
 		mocking.URL(hMux, "POST", "http://example.com/1.0/stuff"),
 		mocking.Header(nil),
 		&MyRequest{"ID", "STUFF"},
@@ -15,19 +15,19 @@ func TestCreate(t *testing.T) {
 	if nil != err {
 		t.Fatal(err)
 	}
-	if http.StatusCreated != s {
-		t.Fatal(s)
+	if http.StatusCreated != code {
+		t.Fatal(code)
 	}
-	if "http://example.com/1.0/stuff/ID" != h.Get("Content-Location") {
-		t.Fatal(h)
+	if "http://example.com/1.0/stuff/ID" != header.Get("Content-Location") {
+		t.Fatal(header)
 	}
-	if "ID" != rs.ID || "STUFF" != rs.Stuff {
-		t.Fatal(rs)
+	if "ID" != response.ID || "STUFF" != response.Stuff {
+		t.Fatal(response)
 	}
 }
 
 func TestGet(t *testing.T) {
-	s, _, rs, err := get(
+	code, _, response, err := get(
 		mocking.URL(hMux, "GET", "http://example.com/1.0/stuff/ID"),
 		mocking.Header(nil),
 		nil,
@@ -35,11 +35,11 @@ func TestGet(t *testing.T) {
 	if nil != err {
 		t.Fatal(err)
 	}
-	if http.StatusOK != s {
-		t.Fatal(s)
+	if http.StatusOK != code {
+		t.Fatal(code)
 	}
-	if "ID" != rs.ID || "STUFF" != rs.Stuff {
-		t.Fatal(rs)
+	if "ID" != response.ID || "STUFF" != response.Stuff {
+		t.Fatal(response)
 	}
 }
 
@@ -56,7 +56,7 @@ func TestNotFound(t *testing.T) {
 }
 
 func TestUpdate(t *testing.T) {
-	s, _, rs, err := update(
+	code, _, response, err := update(
 		mocking.URL(hMux, "POST", "http://example.com/1.0/stuff/ID"),
 		mocking.Header(nil),
 		&MyRequest{"ID", "STUFF"},
@@ -64,10 +64,10 @@ func TestUpdate(t *testing.T) {
 	if nil != err {
 		t.Fatal(err)
 	}
-	if http.StatusAccepted != s {
-		t.Fatal(s)
+	if http.StatusAccepted != code {
+		t.Fatal(code)
 	}
-	if "ID" != rs.ID || "STUFF" != rs.Stuff {
-		t.Fatal(rs)
+	if "ID" != response.ID || "STUFF" != response.Stuff {
+		t.Fatal(response)
 	}
 }

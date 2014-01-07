@@ -58,6 +58,11 @@ Wrap an `http.Handler` in `tigertonic.ApacheLogged` to have the request and resp
 
 Wrap an `http.Handler` in `tigertonic.Counted` or `tigertonic.Timed` to have the request counted or timed with [`go-metrics`](https://github.com/rcrowley/go-metrics).
 
+`tigertonic.CountedByStatus` and `tigertonic.CountedByStatusXX`
+---------------------------------------------------------------
+
+Wrap an `http.Handler` in `tigertonic.CountedByStatus` or `tigertonic.CountedByStatusXX` to have the response counted with [`go-metrics`](https://github.com/rcrowley/go-metrics) with a `metrics.Counter` for each HTTP status code or family of status codes (`1xx`, `2xx`, and so on).
+
 `tigertonic.First`
 ------------------
 

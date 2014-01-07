@@ -29,7 +29,7 @@ func ApacheLogged(handler http.Handler) *ApacheLogger {
 // ServeHTTP wraps the http.Request and http.ResponseWriter to log to standard
 // output and pass through to the underlying http.Handler.
 func (al *ApacheLogger) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	aw := &apacheResponseWriter{ResponseWriter: w}
+	aw := &apacheLoggerResponseWriter{ResponseWriter: w}
 	al.handler.ServeHTTP(aw, r)
 	remoteAddr := r.RemoteAddr
 	if index := strings.LastIndex(remoteAddr, ":"); index != -1 {
@@ -56,7 +56,7 @@ func (al *ApacheLogger) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		r.Method,
 		r.RequestURI,
 		r.Proto,
-		aw.Status,
+		aw.StatusCode,
 		aw.Size,
 		referer,
 		userAgent,
@@ -126,7 +126,7 @@ func (l *Logger) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		Logger:     l,
 		requestID:  requestID,
 	}
-	l.handler.ServeHTTP(&responseWriter{
+	l.handler.ServeHTTP(&loggerResponseWriter{
 		ResponseWriter: w,
 		Logger:         l,
 		request:        r,
@@ -156,14 +156,14 @@ func NewRequestID() RequestID {
 	return RequestID(RandomBase62Bytes(16))
 }
 
-type apacheResponseWriter struct {
+type apacheLoggerResponseWriter struct {
 	http.ResponseWriter
-	Size   int
-	Status int
+	Size       int
+	StatusCode int
 }
 
-func (w *apacheResponseWriter) Write(p []byte) (int, error) {
-	if w.Status == 0 {
+func (w *apacheLoggerResponseWriter) Write(p []byte) (int, error) {
+	if w.StatusCode == 0 {
 		w.WriteHeader(http.StatusOK)
 	}
 	size, err := w.ResponseWriter.Write(p)
@@ -171,9 +171,9 @@ func (w *apacheResponseWriter) Write(p []byte) (int, error) {
 	return size, err
 }
 
-func (w *apacheResponseWriter) WriteHeader(status int) {
-	w.ResponseWriter.WriteHeader(status)
-	w.Status = status
+func (w *apacheLoggerResponseWriter) WriteHeader(code int) {
+	w.ResponseWriter.WriteHeader(code)
+	w.StatusCode = code
 }
 
 type readCloser struct {
@@ -190,7 +190,7 @@ func (r *readCloser) Read(p []byte) (int, error) {
 	return n, err
 }
 
-type responseWriter struct {
+type loggerResponseWriter struct {
 	http.ResponseWriter
 	*Logger
 	request     *http.Request
@@ -198,7 +198,7 @@ type responseWriter struct {
 	wroteHeader bool
 }
 
-func (w *responseWriter) Write(p []byte) (int, error) {
+func (w *loggerResponseWriter) Write(p []byte) (int, error) {
 	if !w.wroteHeader {
 		w.WriteHeader(http.StatusOK)
 	}
@@ -210,14 +210,14 @@ func (w *responseWriter) Write(p []byte) (int, error) {
 	return w.ResponseWriter.Write(p)
 }
 
-func (w *responseWriter) WriteHeader(status int) {
+func (w *loggerResponseWriter) WriteHeader(code int) {
 	w.wroteHeader = true
 	w.Printf(
 		"%s < %s %d %s\n",
 		w.requestID,
 		w.request.Proto,
-		status,
-		http.StatusText(status),
+		code,
+		http.StatusText(code),
 	)
 	for name, values := range w.Header() {
 		for _, value := range values {
@@ -225,5 +225,5 @@ func (w *responseWriter) WriteHeader(status int) {
 		}
 	}
 	w.Println(w.requestID, "<")
-	w.ResponseWriter.WriteHeader(status)
+	w.ResponseWriter.WriteHeader(code)
 }

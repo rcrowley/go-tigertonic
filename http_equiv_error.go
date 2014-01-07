@@ -13,251 +13,359 @@ type Err error
 
 type HTTPEquivError interface {
 	error
-	Status() int
+	StatusCode() int
 }
 
 type Continue struct {
 	Err
 }
 
-func (err Continue) Status() int { return http.StatusContinue }
+func (err Continue) Name() string { return errorName(err.Err, "") }
+
+func (err Continue) StatusCode() int { return http.StatusContinue }
 
 type SwitchingProtocols struct {
 	Err
 }
 
-func (err SwitchingProtocols) Status() int { return http.StatusSwitchingProtocols }
+func (err SwitchingProtocols) Name() string { return errorName(err.Err, "") }
+
+func (err SwitchingProtocols) StatusCode() int { return http.StatusSwitchingProtocols }
 
 type OK struct {
 	Err
 }
 
-func (err OK) Status() int { return http.StatusOK }
+func (err OK) Name() string { return errorName(err.Err, "") }
+
+func (err OK) StatusCode() int { return http.StatusOK }
 
 type Created struct {
 	Err
 }
 
-func (err Created) Status() int { return http.StatusCreated }
+func (err Created) Name() string { return errorName(err.Err, "") }
+
+func (err Created) StatusCode() int { return http.StatusCreated }
 
 type Accepted struct {
 	Err
 }
 
-func (err Accepted) Status() int { return http.StatusAccepted }
+func (err Accepted) Name() string { return errorName(err.Err, "") }
+
+func (err Accepted) StatusCode() int { return http.StatusAccepted }
 
 type NonAuthoritativeInfo struct {
 	Err
 }
 
-func (err NonAuthoritativeInfo) Status() int { return http.StatusNonAuthoritativeInfo }
+func (err NonAuthoritativeInfo) Name() string { return errorName(err.Err, "") }
+
+func (err NonAuthoritativeInfo) StatusCode() int { return http.StatusNonAuthoritativeInfo }
 
 type NoContent struct {
 	Err
 }
 
-func (err NoContent) Status() int { return http.StatusNoContent }
+func (err NoContent) Name() string { return errorName(err.Err, "") }
+
+func (err NoContent) StatusCode() int { return http.StatusNoContent }
 
 type ResetContent struct {
 	Err
 }
 
-func (err ResetContent) Status() int { return http.StatusResetContent }
+func (err ResetContent) Name() string { return errorName(err.Err, "") }
+
+func (err ResetContent) StatusCode() int { return http.StatusResetContent }
 
 type PartialContent struct {
 	Err
 }
 
-func (err PartialContent) Status() int { return http.StatusPartialContent }
+func (err PartialContent) Name() string { return errorName(err.Err, "") }
+
+func (err PartialContent) StatusCode() int { return http.StatusPartialContent }
 
 type MultipleChoices struct {
 	Err
 }
 
-func (err MultipleChoices) Status() int { return http.StatusMultipleChoices }
+func (err MultipleChoices) Name() string { return errorName(err.Err, "") }
+
+func (err MultipleChoices) StatusCode() int { return http.StatusMultipleChoices }
 
 type MovedPermanently struct {
 	Err
 }
 
-func (err MovedPermanently) Status() int { return http.StatusMovedPermanently }
+func (err MovedPermanently) Name() string { return errorName(err.Err, "") }
+
+func (err MovedPermanently) StatusCode() int { return http.StatusMovedPermanently }
 
 type Found struct {
 	Err
 }
 
-func (err Found) Status() int { return http.StatusFound }
+func (err Found) Name() string { return errorName(err.Err, "") }
+
+func (err Found) StatusCode() int { return http.StatusFound }
 
 type SeeOther struct {
 	Err
 }
 
-func (err SeeOther) Status() int { return http.StatusSeeOther }
+func (err SeeOther) Name() string { return errorName(err.Err, "") }
+
+func (err SeeOther) StatusCode() int { return http.StatusSeeOther }
 
 type NotModified struct {
 	Err
 }
 
-func (err NotModified) Status() int { return http.StatusNotModified }
+func (err NotModified) Name() string { return errorName(err.Err, "") }
+
+func (err NotModified) StatusCode() int { return http.StatusNotModified }
 
 type UseProxy struct {
 	Err
 }
 
-func (err UseProxy) Status() int { return http.StatusUseProxy }
+func (err UseProxy) Name() string { return errorName(err.Err, "") }
+
+func (err UseProxy) StatusCode() int { return http.StatusUseProxy }
 
 type TemporaryRedirect struct {
 	Err
 }
 
-func (err TemporaryRedirect) Status() int { return http.StatusTemporaryRedirect }
+func (err TemporaryRedirect) Name() string { return errorName(err.Err, "") }
+
+func (err TemporaryRedirect) StatusCode() int { return http.StatusTemporaryRedirect }
 
 type BadRequest struct {
 	Err
 }
 
-func (err BadRequest) Status() int { return http.StatusBadRequest }
+func (err BadRequest) Name() string { return errorName(err.Err, "") }
+
+func (err BadRequest) StatusCode() int { return http.StatusBadRequest }
 
 type Unauthorized struct {
 	Err
 }
 
-func (err Unauthorized) Status() int { return http.StatusUnauthorized }
+func (err Unauthorized) Name() string { return errorName(err.Err, "") }
+
+func (err Unauthorized) StatusCode() int { return http.StatusUnauthorized }
 
 type PaymentRequired struct {
 	Err
 }
 
-func (err PaymentRequired) Status() int { return http.StatusPaymentRequired }
+func (err PaymentRequired) Name() string { return errorName(err.Err, "") }
+
+func (err PaymentRequired) StatusCode() int { return http.StatusPaymentRequired }
 
 type Forbidden struct {
 	Err
 }
 
-func (err Forbidden) Status() int { return http.StatusForbidden }
+func (err Forbidden) Name() string { return errorName(err.Err, "") }
+
+func (err Forbidden) StatusCode() int { return http.StatusForbidden }
 
 type NotFound struct {
 	Err
 }
 
-func (err NotFound) Status() int { return http.StatusNotFound }
+func (err NotFound) Name() string { return errorName(err.Err, "") }
+
+func (err NotFound) StatusCode() int { return http.StatusNotFound }
 
 type MethodNotAllowed struct {
 	Err
 }
 
-func (err MethodNotAllowed) Status() int { return http.StatusMethodNotAllowed }
+func (err MethodNotAllowed) Name() string { return errorName(err.Err, "") }
+
+func (err MethodNotAllowed) StatusCode() int { return http.StatusMethodNotAllowed }
 
 type NotAcceptable struct {
 	Err
 }
 
-func (err NotAcceptable) Status() int { return http.StatusNotAcceptable }
+func (err NotAcceptable) Name() string { return errorName(err.Err, "") }
+
+func (err NotAcceptable) StatusCode() int { return http.StatusNotAcceptable }
 
 type ProxyAuthRequired struct {
 	Err
 }
 
-func (err ProxyAuthRequired) Status() int { return http.StatusProxyAuthRequired }
+func (err ProxyAuthRequired) Name() string { return errorName(err.Err, "") }
+
+func (err ProxyAuthRequired) StatusCode() int { return http.StatusProxyAuthRequired }
 
 type RequestTimeout struct {
 	Err
 }
 
-func (err RequestTimeout) Status() int { return http.StatusRequestTimeout }
+func (err RequestTimeout) Name() string { return errorName(err.Err, "") }
+
+func (err RequestTimeout) StatusCode() int { return http.StatusRequestTimeout }
 
 type Conflict struct {
 	Err
 }
 
-func (err Conflict) Status() int { return http.StatusConflict }
+func (err Conflict) Name() string { return errorName(err.Err, "") }
+
+func (err Conflict) StatusCode() int { return http.StatusConflict }
 
 type Gone struct {
 	Err
 }
 
-func (err Gone) Status() int { return http.StatusGone }
+func (err Gone) Name() string { return errorName(err.Err, "") }
+
+func (err Gone) StatusCode() int { return http.StatusGone }
 
 type LengthRequired struct {
 	Err
 }
 
-func (err LengthRequired) Status() int { return http.StatusLengthRequired }
+func (err LengthRequired) Name() string { return errorName(err.Err, "") }
+
+func (err LengthRequired) StatusCode() int { return http.StatusLengthRequired }
 
 type PreconditionFailed struct {
 	Err
 }
 
-func (err PreconditionFailed) Status() int { return http.StatusPreconditionFailed }
+func (err PreconditionFailed) Name() string { return errorName(err.Err, "") }
+
+func (err PreconditionFailed) StatusCode() int { return http.StatusPreconditionFailed }
 
 type RequestEntityTooLarge struct {
 	Err
 }
 
-func (err RequestEntityTooLarge) Status() int { return http.StatusRequestEntityTooLarge }
+func (err RequestEntityTooLarge) Name() string { return errorName(err.Err, "") }
+
+func (err RequestEntityTooLarge) StatusCode() int { return http.StatusRequestEntityTooLarge }
 
 type RequestURITooLong struct {
 	Err
 }
 
-func (err RequestURITooLong) Status() int { return http.StatusRequestURITooLong }
+func (err RequestURITooLong) Name() string { return errorName(err.Err, "") }
+
+func (err RequestURITooLong) StatusCode() int { return http.StatusRequestURITooLong }
 
 type UnsupportedMediaType struct {
 	Err
 }
 
-func (err UnsupportedMediaType) Status() int { return http.StatusUnsupportedMediaType }
+func (err UnsupportedMediaType) Name() string { return errorName(err.Err, "") }
+
+func (err UnsupportedMediaType) StatusCode() int { return http.StatusUnsupportedMediaType }
 
 type RequestedRangeNotSatisfiable struct {
 	Err
 }
 
-func (err RequestedRangeNotSatisfiable) Status() int { return http.StatusRequestedRangeNotSatisfiable }
+func (err RequestedRangeNotSatisfiable) Name() string { return errorName(err.Err, "") }
+
+func (err RequestedRangeNotSatisfiable) StatusCode() int {
+	return http.StatusRequestedRangeNotSatisfiable
+}
 
 type ExpectationFailed struct {
 	Err
 }
 
-func (err ExpectationFailed) Status() int { return http.StatusExpectationFailed }
+func (err ExpectationFailed) Name() string { return errorName(err.Err, "") }
+
+func (err ExpectationFailed) StatusCode() int { return http.StatusExpectationFailed }
 
 type Teapot struct {
 	Err
 }
 
-func (err Teapot) Status() int { return http.StatusTeapot }
+func (err Teapot) Name() string { return errorName(err.Err, "") }
+
+func (err Teapot) StatusCode() int { return http.StatusTeapot }
 
 type InternalServerError struct {
 	Err
 }
 
-func (err InternalServerError) Status() int { return http.StatusInternalServerError }
+func (err InternalServerError) Name() string { return errorName(err.Err, "") }
+
+func (err InternalServerError) StatusCode() int { return http.StatusInternalServerError }
 
 type NotImplemented struct {
 	Err
 }
 
-func (err NotImplemented) Status() int { return http.StatusNotImplemented }
+func (err NotImplemented) Name() string { return errorName(err.Err, "") }
+
+func (err NotImplemented) StatusCode() int { return http.StatusNotImplemented }
 
 type BadGateway struct {
 	Err
 }
 
-func (err BadGateway) Status() int { return http.StatusBadGateway }
+func (err BadGateway) Name() string { return errorName(err.Err, "") }
+
+func (err BadGateway) StatusCode() int { return http.StatusBadGateway }
 
 type ServiceUnavailable struct {
 	Err
 }
 
-func (err ServiceUnavailable) Status() int { return http.StatusServiceUnavailable }
+func (err ServiceUnavailable) Name() string { return errorName(err.Err, "") }
+
+func (err ServiceUnavailable) StatusCode() int { return http.StatusServiceUnavailable }
 
 type GatewayTimeout struct {
 	Err
 }
 
-func (err GatewayTimeout) Status() int { return http.StatusGatewayTimeout }
+func (err GatewayTimeout) Name() string { return errorName(err.Err, "") }
+
+func (err GatewayTimeout) StatusCode() int { return http.StatusGatewayTimeout }
 
 type HTTPVersionNotSupported struct {
 	Err
 }
 
-func (err HTTPVersionNotSupported) Status() int { return http.StatusHTTPVersionNotSupported }
+func (err HTTPVersionNotSupported) Name() string { return errorName(err.Err, "") }
+
+func (err HTTPVersionNotSupported) StatusCode() int { return http.StatusHTTPVersionNotSupported }
+
+type httpEquivError struct {
+	Err
+	code int
+}
+
+// Return a new HTTPEquivError whose StatusCode method returns the given
+// status code.
+func NewHTTPEquivError(err error, code int) error {
+	return httpEquivError{err, code}
+}
+
+// Name implements the NamedError interface so that the underlying error's type
+// is communicated to the caller.
+func (err httpEquivError) Name() string {
+	return errorName(err.Err, "")
+}
+
+func (err httpEquivError) StatusCode() int {
+	if http.StatusContinue > err.code {
+		return http.StatusInternalServerError
+	}
+	return err.code
+}
