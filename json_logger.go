@@ -85,7 +85,7 @@ func (jl *JSONLogger) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 func buildRequest(r *http.Request, b *jsonReadCloser) httpRequestObject {
 	headers := make(map[string]string)
 	for name, values := range r.Header {
-		headers[name] = strings.Join(values, "; ")
+		headers[strings.ToLower(name)] = strings.Join(values, "; ")
 	}
 
 	return httpRequestObject{
@@ -100,7 +100,7 @@ func buildRequest(r *http.Request, b *jsonReadCloser) httpRequestObject {
 func buildResponse(tw *TeeResponseWriter) httpResponseObject {
 	headers := make(map[string]string)
 	for name, values := range tw.Header() {
-		headers[name] = strings.Join(values, "; ")
+		headers[strings.ToLower(name)] = strings.Join(values, "; ")
 	}
 
 	return httpResponseObject{
@@ -114,7 +114,7 @@ func buildResponse(tw *TeeResponseWriter) httpResponseObject {
 type logObject struct {
 	Message   string     `json:"@message"`
 	Type      string     `json:"@type"`
-	RequestId RequestID  `json:"@request_id"`
+	RequestID RequestID  `json:"@request_id"`
 	Duration  int64      `json:"duration"`
 	Http      httpObject `json:"http"`
 }
