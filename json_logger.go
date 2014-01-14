@@ -78,7 +78,7 @@ func (jl *JSONLogger) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		outString = jl.redactor(outString)
 	}
 
-	jl.logger.Println(outString)
+	jl.logger.Println("@json:", outString)
 }
 
 // Builds up the request object that will appear inside http.request in the logs
