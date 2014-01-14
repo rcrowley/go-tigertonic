@@ -2,7 +2,6 @@ package tigertonic
 
 import (
 	"testing"
-	"fmt"
 	"net/url"
 	"net/http"
 	"bytes"
@@ -99,6 +98,4 @@ func TestJSONLoggerRedactor(t *testing.T) {
 	if !strings.Contains(s, "REDACTED") {
 		t.Fatal(s)
 	}
-
-	fmt.Println(s)
 }
