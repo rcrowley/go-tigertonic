@@ -46,10 +46,12 @@ func myHandler(*url.URL, http.Header, *MyRequest) (int, http.Header, *MyResponse
 
 Alternatively, you can return a valid status as the first output parameter and an `error` as the last; that status will be used in the error response.
 
-`tigertonic.Logged` and `tigertonic.ApacheLogged`
--------------------------------------------------
+`tigertonic.Logged`, `tigertonic.JSONLogged`, and `tigertonic.ApacheLogged`
+---------------------------------------------------------------------------
 
 Wrap an `http.Handler` in `tigertonic.Logged` to have the request and response headers and bodies logged to standard output.  The second argument is an optional `func(string) string` called as requests and responses are logged to give the caller the opportunity to redact sensitive information from log entries.
+
+Wrap an `http.Handler` in `tigertonic.JSONLogged` to have the request and response headers and bodies logged to standard output as JSON suitable for sending to ElasticSearch, Flume, Logstash, and so on.  The JSON will be prefixed with `@json: `.  The second argument is an optional `func(string) string` called as requests and responses are logged to give the caller the opportunity to redact sensitive information from log entries.
 
 Wrap an `http.Handler` in `tigertonic.ApacheLogged` to have the request and response logged in the more traditional Apache combined log format.
 
