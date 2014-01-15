@@ -36,107 +36,85 @@ func JSONLogged(handler http.Handler, redactor Redactor) *JSONLogger {
 
 // ServeHTTP wraps the http.Request and http.ResponseWriter to capture the input and output for logging
 func (jl *JSONLogger) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	requestID := jl.RequestIDCreator(r)
-	startTime := time.Now()
-
-	teeWriter := NewTeeResponseWriter(w)
+	t := time.Now()
+	tee := NewTeeResponseWriter(w)
 	body := &jsonReadCloser{r.Body, bytes.Buffer{}}
 	r.Body = body
-
-	jl.handler.ServeHTTP(teeWriter, r)
-
-	message := fmt.Sprintf(
-		"%s %s %s\n%s %d %s",
-		r.Method,
-		r.URL.RequestURI(),
-		r.Proto,
-		r.Proto,
-		teeWriter.StatusCode,
-		http.StatusText(teeWriter.StatusCode),
-	)
-
-	outObject := &logObject{
-		message,
-		"http",
-		requestID,
-		int64(time.Since(startTime) / time.Millisecond),
-		httpObject{
-			fmt.Sprintf("%d.%d", r.ProtoMajor, r.ProtoMinor),
-			buildRequest(r, body),
-			buildResponse(teeWriter),
+	jl.handler.ServeHTTP(tee, r)
+	buf, err := json.Marshal(&jsonLog{
+		Duration: time.Since(t) / time.Millisecond,
+		HTTP: jsonLogHTTP{
+			Request: jsonLogHTTPRequest{
+				Body:   body.Bytes.String(),
+				Header: jsonLogHTTPHeader(r.Header),
+				Method: r.Method,
+				Path:   r.URL.RequestURI(),
+			},
+			Response: jsonLogHTTPResponse{
+				Body:       tee.Body.String(),
+				Header:     jsonLogHTTPHeader(tee.Header()),
+				StatusCode: tee.StatusCode,
+				StatusText: http.StatusText(tee.StatusCode),
+			},
+			Version: fmt.Sprintf("%d.%d", r.ProtoMajor, r.ProtoMinor),
 		},
-	}
-
-	out, err := json.Marshal(outObject)
+		Message: fmt.Sprintf(
+			"%s %s %s\n%s %d %s",
+			r.Method,
+			r.URL.RequestURI(),
+			r.Proto,
+			r.Proto,
+			tee.StatusCode,
+			http.StatusText(tee.StatusCode),
+		),
+		RequestID: jl.RequestIDCreator(r),
+		Type:      "http",
+	})
 	if err != nil {
-		jl.logger.Println("Error while formatting request log:", err)
+		log.Println(err)
 		return
 	}
-
-	outString := string(out)
+	s := string(buf)
 	if nil != jl.redactor {
-		outString = jl.redactor(outString)
+		s = jl.redactor(s)
 	}
-
-	jl.logger.Println("@json:", outString)
+	jl.logger.Println("@json:", s)
 }
 
-// Builds up the request object that will appear inside http.request in the logs
-func buildRequest(r *http.Request, b *jsonReadCloser) httpRequestObject {
-	headers := make(map[string]string)
-	for name, values := range r.Header {
-		headers[strings.ToLower(name)] = strings.Join(values, "; ")
+func jsonLogHTTPHeader(h http.Header) map[string]string {
+	header := make(map[string]string)
+	for name, values := range h {
+		header[strings.ToLower(name)] = strings.Join(values, "; ")
 	}
-
-	return httpRequestObject{
-		r.Method,
-		r.URL.RequestURI(),
-		headers,
-		b.Bytes.String(),
-	}
+	return header
 }
 
-// Builds up the response object that will appear inside http.response in the logs
-func buildResponse(tw *TeeResponseWriter) httpResponseObject {
-	headers := make(map[string]string)
-	for name, values := range tw.Header() {
-		headers[strings.ToLower(name)] = strings.Join(values, "; ")
-	}
-
-	return httpResponseObject{
-		tw.StatusCode,
-		http.StatusText(tw.StatusCode),
-		headers,
-		string(tw.Body.String()),
-	}
+type jsonLog struct {
+	Duration  time.Duration `json:"duration"`
+	HTTP      jsonLogHTTP   `json:"http"`
+	Message   string        `json:"@message"`
+	RequestID RequestID     `json:"@request_id"`
+	Type      string        `json:"@type"`
 }
 
-type logObject struct {
-	Message   string     `json:"@message"`
-	Type      string     `json:"@type"`
-	RequestID RequestID  `json:"@request_id"`
-	Duration  int64      `json:"duration"`
-	Http      httpObject `json:"http"`
+type jsonLogHTTP struct {
+	Request  jsonLogHTTPRequest  `json:"request"`
+	Response jsonLogHTTPResponse `json:"response"`
+	Version  string              `json:"version"`
 }
 
-type httpObject struct {
-	Version  string             `json:"version"`
-	Request  httpRequestObject  `json:"request"`
-	Response httpResponseObject `json:"response"`
+type jsonLogHTTPRequest struct {
+	Body   string            `json:"body"`
+	Header map[string]string `json:"headers"`
+	Method string            `json:"method"`
+	Path   string            `json:"url"`
 }
 
-type httpRequestObject struct {
-	Method  string            `json:"method"`
-	Url     string            `json:"url"`
-	Headers map[string]string `json:"headers"`
-	Body    string            `json:"body"`
-}
-
-type httpResponseObject struct {
-	Status  int               `json:"status"`
-	Reason  string            `json:"reason"`
-	Headers map[string]string `json:"headers"`
-	Body    string            `json:"body"`
+type jsonLogHTTPResponse struct {
+	Body       string            `json:"body"`
+	Header     map[string]string `json:"headers"`
+	StatusText string            `json:"reason"`
+	StatusCode int               `json:"status"`
 }
 
 type jsonReadCloser struct {
@@ -147,6 +125,5 @@ type jsonReadCloser struct {
 func (r *jsonReadCloser) Read(p []byte) (int, error) {
 	n, err := r.ReadCloser.Read(p)
 	r.Bytes.Write(p[:n])
-
 	return n, err
 }

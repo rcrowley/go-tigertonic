@@ -1,14 +1,14 @@
 package tigertonic
 
 import (
-	"testing"
-	"net/url"
-	"net/http"
 	"bytes"
-	"log"
 	"encoding/json"
+	"log"
+	"net/http"
+	"net/url"
 	"reflect"
 	"strings"
+	"testing"
 )
 
 func TestJSONLogger(t *testing.T) {
@@ -25,7 +25,7 @@ func TestJSONLogger(t *testing.T) {
 		return http.StatusOK, nil, &testResponse{"bar"}, nil
 	}), nil)
 
-	logger.RequestIDCreator = func (r *http.Request) RequestID {
+	logger.RequestIDCreator = func(r *http.Request) RequestID {
 		return "request-id"
 	}
 
@@ -33,39 +33,37 @@ func TestJSONLogger(t *testing.T) {
 	logger.logger = log.New(b, "", 0)
 	logger.ServeHTTP(w, r)
 
-	var m logObject
+	var m jsonLog
 
 	err := json.Unmarshal(b.Bytes()[6:], &m)
-	if (err != nil) {
+	if err != nil {
 		t.Fatal(err)
 	}
 
-	requestHeaders := make(map[string]string)
-	requestHeaders["accept"] = "application/json"
-	requestHeaders["content-type"] = "application/json"
-
-	responseHeaders := make(map[string]string)
-	responseHeaders["content-type"] = "application/json"
-
-	expected := logObject{
-		"POST /foo?bar=baz HTTP/1.1\nHTTP/1.1 200 OK",
-		"http",
-		"request-id",
-		int64(0),
-		httpObject{
-			"1.1",
-			httpRequestObject{
-				"POST",
-				"/foo?bar=baz",
-				requestHeaders,
-				"{\"foo\":\"bar\"}",
+	expected := jsonLog{
+		Message:   "POST /foo?bar=baz HTTP/1.1\nHTTP/1.1 200 OK",
+		Type:      "http",
+		RequestID: "request-id",
+		Duration:  0,
+		HTTP: jsonLogHTTP{
+			Request: jsonLogHTTPRequest{
+				Body: "{\"foo\":\"bar\"}",
+				Header: map[string]string{
+					"accept":       "application/json",
+					"content-type": "application/json",
+				},
+				Method: "POST",
+				Path:   "/foo?bar=baz",
 			},
-			httpResponseObject{
-				200,
-				"OK",
-				responseHeaders,
-				"{\"foo\":\"bar\"}\n",
+			Response: jsonLogHTTPResponse{
+				Body: "{\"foo\":\"bar\"}\n",
+				Header: map[string]string{
+					"content-type": "application/json",
+				},
+				StatusCode: 200,
+				StatusText: "OK",
 			},
+			Version: "1.1",
 		},
 	}
 
@@ -81,10 +79,10 @@ func TestJSONLoggerRedactor(t *testing.T) {
 	r.Header.Set("Accept", "application/json")
 
 	logger := JSONLogged(Marshaled(func(u *url.URL, h http.Header, rq *testRequest) (int, http.Header, *testResponse, error) {
-			return http.StatusOK, nil, &testResponse{"SECRET"}, nil
-		}), func(s string) string {
-			return strings.Replace(s, "SECRET", "REDACTED", -1)
-		})
+		return http.StatusOK, nil, &testResponse{"SECRET"}, nil
+	}), func(s string) string {
+		return strings.Replace(s, "SECRET", "REDACTED", -1)
+	})
 
 	b := &bytes.Buffer{}
 	logger.logger = log.New(b, "", 0)
