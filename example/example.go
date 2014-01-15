@@ -12,7 +12,9 @@ import (
 	_ "net/http/pprof" // Imported for side-effect of handling /debug/pprof.
 	"net/url"
 	"os"
+	"os/signal"
 	"strings"
+	"syscall"
 )
 
 var (
@@ -152,15 +154,25 @@ func main() {
 			nil,
 		),
 	)
-	var err error
-	if "" != *cert && "" != *key {
-		err = server.ListenAndServeTLS(*cert, *key)
-	} else {
-		err = server.ListenAndServe()
-	}
-	if nil != err {
-		log.Fatalln(err)
-	}
+
+	// Example use of server.Close and server.Wait to stop gracefully.
+	go func() {
+		var err error
+		if "" != *cert && "" != *key {
+			err = server.ListenAndServeTLS(*cert, *key)
+		} else {
+			err = server.ListenAndServe()
+		}
+		if nil != err {
+			log.Println(err)
+		}
+	}()
+	ch := make(chan os.Signal)
+	signal.Notify(ch, syscall.SIGINT, syscall.SIGQUIT, syscall.SIGTERM)
+	log.Println(<-ch)
+	server.Close()
+	server.Wait()
+
 }
 
 // POST /stuff

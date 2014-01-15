@@ -145,7 +145,7 @@ mux.Handle("POST", "/stuff", tigertonic.Timed(tigertonic.Marshaled(myHandler), "
 tigertonic.NewServer(":8000", tigertonic.Logged(mux, nil)).ListenAndServe()
 ```
 
-Ready for more?  See the full [example](https://github.com/rcrowley/go-tigertonic/tree/master/example).  Build it with `go build`, run it with `./example`, and test it out:
+Ready for more?  See the full [example](https://github.com/rcrowley/go-tigertonic/tree/master/example) which includes all of these handlers plus an example of how to use `tigertonic.Server` to stop gracefully.  Build it with `go build`, run it with `./example`, and test it out:
 
 ```sh
 curl -H"Host: example.com" -sv "http://127.0.0.1:8000/1.0/stuff/ID"
