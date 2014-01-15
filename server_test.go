@@ -3,9 +3,11 @@ package tigertonic
 import "testing"
 
 func TestServerCATLS(t *testing.T) {
-	s := NewServer("", NotFoundHandler{})
+	s, err := NewTLSServer("", "test.crt", "test.key", NotFoundHandler{})
+	if nil != err {
+		t.Fatal(err)
+	}
 	s.CA("test.crt")
-	s.TLS("test.crt", "test.key")
 	if nil == s.TLSConfig.Certificates || 1 != len(s.TLSConfig.Certificates) {
 		t.Fatal("no Certificates")
 	}

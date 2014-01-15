@@ -23,6 +23,17 @@ func NewServer(addr string, handler http.Handler) *Server {
 	}}
 }
 
+// NewTLSServer returns an http.Server with better defaults configured to use
+// the certificate and private key files.
+func NewTLSServer(
+	addr, cert, key string,
+	handler http.Handler,
+) (*Server, error) {
+	s := NewServer(addr, handler)
+	return s, s.TLS(cert, key)
+}
+
+// CA overrides the certificate authority on the server's TLSConfig field.
 func (s *Server) CA(ca string) error {
 	certPool := x509.NewCertPool()
 	buf, err := ioutil.ReadFile(ca)
@@ -35,6 +46,8 @@ func (s *Server) CA(ca string) error {
 	return nil
 }
 
+// TLS configures this server to be a TLS server using the given certificate
+// and private key files.
 func (s *Server) TLS(cert, key string) error {
 	c, err := tls.LoadX509KeyPair(cert, key)
 	if nil != err {
