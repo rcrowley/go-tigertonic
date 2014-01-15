@@ -12,22 +12,26 @@ import (
 // Server is an http.Server with better defaults.
 type Server struct {
 	http.Server
+	ch        chan<- struct{}
 	listener  net.Listener
 	waitGroup sync.WaitGroup
 }
 
 // NewServer returns an http.Server with better defaults.
 func NewServer(addr string, handler http.Handler) *Server {
+	ch := make(chan struct{})
 	return &Server{
 		Server: http.Server{
 			Addr: addr,
 			Handler: &serverHandler{
 				Handler: handler,
+				ch:      ch,
 			},
 			MaxHeaderBytes: 4096,
 			ReadTimeout:    60e9, // These are absolute times which must be
 			WriteTimeout:   60e9, // longer than the longest {up,down}load.
 		},
+		ch: ch,
 	}
 }
 
@@ -57,6 +61,7 @@ func (s *Server) CA(ca string) error {
 // Close closes the listener the server is using and signals open connections
 // to close at their earliest convenience.
 func (s *Server) Close() error {
+	close(s.ch)
 	return s.listener.Close()
 }
 
@@ -122,6 +127,20 @@ func (s *Server) tlsConfig() {
 	}
 }
 
+type closingResponseWriter struct {
+	http.ResponseWriter
+	ch <-chan struct{}
+}
+
+func (w closingResponseWriter) WriteHeader(code int) {
+	select {
+	case <-w.ch:
+		w.Header().Set("Connection", "close")
+	default:
+	}
+	w.ResponseWriter.WriteHeader(code)
+}
+
 type serverHandler struct {
 	http.Handler
 	ch <-chan struct{}
@@ -135,5 +154,8 @@ func (h *serverHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	} else {
 		r.URL.Scheme = "http"
 	}
-	s.handler.ServeHTTP(w, r)
+	h.Handler.ServeHTTP(closingResponseWriter{
+		ResponseWriter: w,
+		ch:             h.ch,
+	}, r)
 }
