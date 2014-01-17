@@ -300,6 +300,7 @@ func TestNonPointerSliceBody(t *testing.T) {
 		t.Fatalf("Body should have been 'b', but instead was '%s'", string(w.Body.Bytes()))
 	}
 }
+
 func testMarshaledPanic(i interface{}, t *testing.T) {
 	defer func() {
 		err := recover()
