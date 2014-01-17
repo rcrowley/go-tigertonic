@@ -162,3 +162,18 @@ func TestHandler(t *testing.T) {
 		t.Fatal(pattern)
 	}
 }
+
+func TestLiteralBeforeWildcard(t *testing.T) {
+	mux := NewTrieServeMux()
+	mux.HandleFunc("GET", "/literal", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	})
+	mux.HandleFunc("GET", "/{wildcard}", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusInternalServerError)
+	})
+	r, _ := http.NewRequest("GET", "http://example.com/literal", nil)
+	_, pattern := mux.Handler(r)
+	if "/literal" != pattern {
+		t.Fatal(pattern)
+	}
+}
