@@ -9,10 +9,35 @@ import (
 )
 
 // HTTPBasicAuth returns an http.Handler that conditionally calls another
-// http.Handler if the request includes and Authorization header with a
+// http.Handler if the request includes an Authorization header with a
 // username and password that appear in the map of credentials.  Otherwise,
 // respond 401 Unauthorized.
-func HTTPBasicAuth(credentials map[string]string, realm string, h http.Handler) FirstHandler {
+func HTTPBasicAuth(
+	credentials map[string]string,
+	realm string,
+	h http.Handler,
+) FirstHandler {
+	return HTTPBasicAuthFunc(
+		func(username, password string) error {
+			if p, ok := credentials[username]; !ok || p != password {
+				return errors.New("unauthorized")
+			}
+			return nil
+		},
+		realm,
+		h,
+	)
+}
+
+// HTTPBasicAuthFunc returns an http.Handler that conditionally calls another
+// http.Handler if the request includes an Authorization header with a
+// username and password that produce a nil error when passed to the given
+// function.  Otherwise, respond 401 Unauthorized.
+func HTTPBasicAuthFunc(
+	f func(string, string) error,
+	realm string,
+	h http.Handler,
+) FirstHandler {
 	header := http.Header{
 		"WWW-Authenticate": []string{fmt.Sprintf("Basic realm=\"%s\"", realm)},
 	}
@@ -21,8 +46,8 @@ func HTTPBasicAuth(credentials map[string]string, realm string, h http.Handler) 
 		if nil != err {
 			return header, err
 		}
-		if p, ok := credentials[username]; !ok || p != password {
-			return header, Unauthorized{errors.New("unauthorized")}
+		if err := f(username, password); nil != err {
+			return header, Unauthorized{err}
 		}
 		return nil, nil
 	}, h)
