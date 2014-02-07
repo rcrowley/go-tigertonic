@@ -59,10 +59,15 @@ func (s *Server) CA(ca string) error {
 }
 
 // Close closes the listener the server is using and signals open connections
-// to close at their earliest convenience.
+// to close at their earliest convenience.  Then it waits for all open
+// connections to become closed.
 func (s *Server) Close() error {
 	close(s.ch)
-	return s.listener.Close()
+	if err := s.listener.Close(); nil != err {
+		return err
+	}
+	s.waitGroup.Wait()
+	return nil
 }
 
 // ListenAndServe calls net.Listen with s.Addr and then calls s.Serve.
@@ -90,7 +95,7 @@ func (s *Server) ListenAndServeTLS(cert, key string) error {
 }
 
 // Serve behaves like http.Server.Serve with the added option to stop the
-// server gracefully with the s.Close and s.Wait methods.
+// server gracefully with the s.Close method.
 func (s *Server) Serve(l net.Listener) error {
 	s.listener = &Listener{
 		Listener:  l,
@@ -109,11 +114,6 @@ func (s *Server) TLS(cert, key string) error {
 	s.tlsConfig()
 	s.TLSConfig.Certificates = []tls.Certificate{c}
 	return nil
-}
-
-// Wait waits for all open connections to become closed.
-func (s *Server) Wait() {
-	s.waitGroup.Wait()
 }
 
 func (s *Server) tlsConfig() {

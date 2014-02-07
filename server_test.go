@@ -41,7 +41,6 @@ func TestServerGracefulStop(t *testing.T) {
 	}()
 	time.Sleep(time.Millisecond)
 	s.Close()
-	s.Wait()
 	now := time.Now()
 	then := <-chT
 	if now.Before(then) {
