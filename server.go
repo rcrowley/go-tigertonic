@@ -46,14 +46,13 @@ func (s *Server) CA(ca string) error {
 	return nil
 }
 
-// ClientCA configures the CA pool for verifying client side certificates
+// ClientCA configures the CA pool for verifying client side certificates.
 func (s *Server) ClientCA(ca string) error {
 	certPool := x509.NewCertPool()
 	buf, err := ioutil.ReadFile(ca)
 	if nil != err {
 		return err
 	}
-
 	certPool.AppendCertsFromPEM(buf)
 	s.tlsConfig()
 	s.TLSConfig.ClientAuth = tls.RequireAndVerifyClientCert
