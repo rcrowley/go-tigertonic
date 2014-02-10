@@ -98,6 +98,9 @@ func (s *Server) ListenAndServe() error {
 	if nil != err {
 		return err
 	}
+	if nil != s.TLSConfig {
+		l = tls.NewListener(l, s.TLSConfig)
+	}
 	return s.Serve(l)
 }
 
@@ -137,6 +140,7 @@ func (s *Server) tlsConfig() {
 				tls.TLS_ECDHE_RSA_WITH_RC4_128_SHA,
 				tls.TLS_RSA_WITH_RC4_128_SHA,
 			},
+			NextProtos: []string{"http/1.1"},
 		}
 	}
 }
