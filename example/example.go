@@ -159,7 +159,6 @@ func main() {
 	go func() {
 		var err error
 		if "" != *cert && "" != *key {
-log.Println("TLS")
 			err = server.ListenAndServeTLS(*cert, *key)
 		} else {
 			err = server.ListenAndServe()
