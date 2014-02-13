@@ -155,7 +155,7 @@ func main() {
 		),
 	)
 
-	// Example use of server.Close and server.Wait to stop gracefully.
+	// Example use of server.Close to stop gracefully.
 	go func() {
 		var err error
 		if "" != *cert && "" != *key {
