@@ -137,13 +137,14 @@ func main() {
 		// Example use of go-metrics to track HTTP status codes.
 		tigertonic.CountedByStatus(
 
-			// Example use of request logging, redacting the word SECRET wherever
-			// it appears.
+			// Example use of request logging, redacting the word SECRET
+			// wherever it appears.
 			tigertonic.Logged(
 
-				// Example use of WithContext, which is required in order to use
-				// Context within any handlers.  The second argument is a zero
-				// value of the type to be used for all actual request contexts.
+				// Example use of WithContext, which is required in order to
+				// use Context within any handlers.  The second argument is a
+				// zero value of the type to be used for all actual request
+				// contexts.
 				tigertonic.WithContext(hMux, context{}),
 
 				func(s string) string {
