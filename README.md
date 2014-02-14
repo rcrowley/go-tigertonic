@@ -100,6 +100,11 @@ Call `tigertonic.Configure` to read and unmarshal a JSON configuration file into
 
 Wrap an `http.Handler` and a zero value of any non-interface type in `tigertonic.WithContext` to enable per-request context.  Each request may call `tigertonic.Context` with the `*http.Request` in progress to get a pointer to the context which is of the type passed to `tigertonic.WithContext`.
 
+`tigertonic.Version`
+--------------------
+
+Respond with a version string that may be set at compile-time.
+
 Usage
 -----
 

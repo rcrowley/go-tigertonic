@@ -27,6 +27,13 @@ var (
 	mux, nsMux *tigertonic.TrieServeMux
 )
 
+// A version string that can be set with
+//
+//     -ldflags "-X main.Version VERSION"
+//
+// at compile-time.
+var Version string
+
 type context struct {
 	Username string
 }
@@ -98,6 +105,9 @@ func init() {
 			return http.StatusOK, nil, &MyResponse{ID: c.Username}, nil
 		}),
 	))
+
+	// Example use of the version endpoint.
+	mux.Handle("GET", "/version", tigertonic.Version(Version))
 
 	// Example use of namespaces.
 	nsMux = tigertonic.NewTrieServeMux()
