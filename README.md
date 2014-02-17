@@ -5,13 +5,20 @@ A Go framework for building JSON web services inspired by [Dropwizard](http://dr
 
 Like the Go language itself, Tiger Tonic strives to keep features orthogonal.  It defers what it can to the Go standard library and a few other packages.
 
-Documentation: <http://godoc.org/github.com/rcrowley/go-tigertonic>
+###Overviews/Tutorials:
+- Gopheracademy Day 13 - <http://blog.gopheracademy.com/day-13-tiger-tonic>
+- Hekka Labs Presentation -  <https://www.youtube.com/watch?v=D4CjdHllA-E>
+- Hekka Labs Presentation slides - <http://rcrowley.org/talks/gosf-2014-01-15.html>
 
-Development mailing list: <https://groups.google.com/forum/#!forum/tigertonic-dev>
+###Documentation: 
+<http://godoc.org/github.com/rcrowley/go-tigertonic>
 
-Users mailing list: <https://groups.google.com/forum/#!forum/tigertonic-users>
+###Mailing list:
+- Users: <https://groups.google.com/forum/#!forum/tigertonic-users>
+- Developers: <https://groups.google.com/forum/#!forum/tigertonic-dev>
 
-IRC: `#tigertonic` on `irc.freenode.net`
+###IRC:
+`#tigertonic` on `irc.freenode.net`
 
 `tigertonic.TrieServeMux`
 -------------------------
