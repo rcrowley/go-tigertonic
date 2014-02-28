@@ -5,8 +5,6 @@ import (
 	_ "expvar" // Imported for side-effect of handling /debug/vars.
 	"flag"
 	"fmt"
-	"github.com/rcrowley/go-metrics"
-	"github.com/rcrowley/go-tigertonic"
 	"log"
 	"net/http"
 	_ "net/http/pprof" // Imported for side-effect of handling /debug/pprof.
@@ -15,6 +13,9 @@ import (
 	"os/signal"
 	"strings"
 	"syscall"
+
+	"github.com/rcrowley/go-metrics"
+	"github.com/rcrowley/go-tigertonic"
 )
 
 var (
