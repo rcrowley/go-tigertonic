@@ -29,7 +29,6 @@ func NewServer(addr string, handler http.Handler) *Server {
 			Addr: addr,
 			Handler: &serverHandler{
 				Handler: handler,
-				ch:      ch,
 			},
 			MaxHeaderBytes: 4096,
 			ReadTimeout:    60e9, // These are absolute times which must be
@@ -107,6 +106,7 @@ func (s *Server) ClientCA(ca string) error {
 // have been closed.
 func (s *Server) Close() error {
 	close(s.ch)
+	s.SetKeepAlivesEnabled(false)
 	s.mu.Lock()
 	for _, l := range s.listeners {
 		if err := l.Close(); nil != err {
@@ -184,23 +184,8 @@ func (s *Server) tlsConfig() {
 	}
 }
 
-type closingResponseWriter struct {
-	http.ResponseWriter
-	ch <-chan struct{}
-}
-
-func (w closingResponseWriter) WriteHeader(code int) {
-	select {
-	case <-w.ch:
-		w.Header().Set("Connection", "close")
-	default:
-	}
-	w.ResponseWriter.WriteHeader(code)
-}
-
 type serverHandler struct {
 	http.Handler
-	ch <-chan struct{}
 }
 
 func (h *serverHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -211,8 +196,5 @@ func (h *serverHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	} else {
 		r.URL.Scheme = "http"
 	}
-	h.Handler.ServeHTTP(closingResponseWriter{
-		ResponseWriter: w,
-		ch:             h.ch,
-	}, r)
+	h.Handler.ServeHTTP(w, r)
 }
