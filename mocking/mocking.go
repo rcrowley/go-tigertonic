@@ -2,6 +2,7 @@
 package mocking
 
 import (
+	"fmt"
 	"github.com/rcrowley/go-tigertonic"
 	"net/http"
 	"net/url"
@@ -44,11 +45,11 @@ func URL(h TestableHandler, method, rawurl string) *url.URL {
 		var ok bool
 		for {
 			h1, _ := h.Handler(rq)
-			if h, ok := h1.(tigertonic.NotFoundHandler); ok {
-				panic(h)
+			if _, ok := h1.(tigertonic.NotFoundHandler); ok {
+				panic(fmt.Errorf("tigertonic.mocking.URL: No handler found: %s %s", method, rawurl))
 			}
-			if h, ok := h1.(tigertonic.MethodNotAllowedHandler); ok {
-				panic(h)
+			if _, ok := h1.(tigertonic.MethodNotAllowedHandler); ok {
+				panic(fmt.Errorf("tigertonic.mocking.URL: Method not allowed: %s %s", method, rawurl))
 			}
 			if h, ok = h1.(TestableHandler); !ok {
 				break
