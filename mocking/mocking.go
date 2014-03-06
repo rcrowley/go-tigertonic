@@ -44,11 +44,11 @@ func URL(h TestableHandler, method, rawurl string) *url.URL {
 		var ok bool
 		for {
 			h1, _ := h.Handler(rq)
-			if _, ok := h1.(tigertonic.NotFoundHandler); ok {
-				panic(err)
+			if h, ok := h1.(tigertonic.NotFoundHandler); ok {
+				panic(h)
 			}
-			if _, ok := h1.(tigertonic.MethodNotAllowedHandler); ok {
-				panic(err)
+			if h, ok := h1.(tigertonic.MethodNotAllowedHandler); ok {
+				panic(h)
 			}
 			if h, ok = h1.(TestableHandler); !ok {
 				break
