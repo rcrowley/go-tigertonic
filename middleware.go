@@ -15,7 +15,7 @@ func First(handlers ...http.Handler) FirstHandler {
 // ServeHTTP calls each handler in its slice of handlers until the first one
 // that calls w.WriteHeader.
 func (fh FirstHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	w0 := &firstResponseWriter{w, false}
+	w0 := &firstResponseWriter{w, nil, false}
 	for _, h := range fh {
 		h.ServeHTTP(w0, r)
 		if w0.written {
@@ -34,12 +34,17 @@ func If(f func(*http.Request) (http.Header, error), h http.Handler) FirstHandler
 
 type firstResponseWriter struct {
 	http.ResponseWriter
+	http.Flusher
 	written bool
 }
 
 func (w *firstResponseWriter) WriteHeader(code int) {
 	w.written = true
 	w.ResponseWriter.WriteHeader(code)
+}
+
+func (w *firstResponseWriter) Flush() {
+	w.ResponseWriter.(http.Flusher).Flush()
 }
 
 type ifHandler func(*http.Request) (http.Header, error)

@@ -158,6 +158,7 @@ func NewRequestID() RequestID {
 
 type apacheLoggerResponseWriter struct {
 	http.ResponseWriter
+	http.Flusher
 	Size       int
 	StatusCode int
 }
@@ -176,6 +177,10 @@ func (w *apacheLoggerResponseWriter) WriteHeader(code int) {
 	w.StatusCode = code
 }
 
+func (w *apacheLoggerResponseWriter) Flush() {
+	w.ResponseWriter.(http.Flusher).Flush()
+}
+
 type readCloser struct {
 	io.ReadCloser
 	*Logger
@@ -192,6 +197,7 @@ func (r *readCloser) Read(p []byte) (int, error) {
 
 type loggerResponseWriter struct {
 	http.ResponseWriter
+	http.Flusher
 	*Logger
 	request     *http.Request
 	requestID   RequestID
@@ -226,4 +232,8 @@ func (w *loggerResponseWriter) WriteHeader(code int) {
 	}
 	w.Println(w.requestID, "<")
 	w.ResponseWriter.WriteHeader(code)
+}
+
+func (w *loggerResponseWriter) Flush() {
+	w.ResponseWriter.(http.Flusher).Flush()
 }
