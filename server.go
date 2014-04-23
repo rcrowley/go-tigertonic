@@ -17,7 +17,7 @@ type Server struct {
 	conns     map[string]net.Conn
 	listeners []net.Listener
 	mu        sync.Mutex // guards conns and listeners
-	waitGroup sync.WaitGroup
+	wg sync.WaitGroup
 }
 
 // NewServer returns an http.Server with better defaults and built-in graceful
@@ -40,7 +40,7 @@ func NewServer(addr string, handler http.Handler) *Server {
 	s.ConnState = func(conn net.Conn, state http.ConnState) {
 		switch state {
 		case http.StateNew:
-			s.waitGroup.Add(1)
+			s.wg.Add(1)
 		case http.StateActive:
 			s.mu.Lock()
 			delete(s.conns, conn.LocalAddr().String())
@@ -56,7 +56,7 @@ func NewServer(addr string, handler http.Handler) *Server {
 				s.mu.Unlock()
 			}
 		case http.StateHijacked, http.StateClosed:
-			s.waitGroup.Done()
+			s.wg.Done()
 		}
 	}
 	return s
@@ -120,7 +120,7 @@ func (s *Server) Close() error {
 	}
 	s.conns = make(map[string]net.Conn)
 	s.mu.Unlock()
-	s.waitGroup.Wait()
+	s.wg.Wait()
 	return nil
 }
 
