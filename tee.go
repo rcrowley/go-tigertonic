@@ -8,6 +8,7 @@ import (
 // TeeHeaderResponseWriter is an http.ResponseWriter that both writes and
 // records the response status and headers for post-processing.
 type TeeHeaderResponseWriter struct {
+	http.Flusher
 	http.ResponseWriter
 	StatusCode int
 }
@@ -17,6 +18,12 @@ type TeeHeaderResponseWriter struct {
 // response status and headers for post-processing.
 func NewTeeHeaderResponseWriter(w http.ResponseWriter) *TeeHeaderResponseWriter {
 	return &TeeHeaderResponseWriter{ResponseWriter: w}
+}
+
+func (w *TeeHeaderResponseWriter) Flush() {
+	if f, ok := w.ResponseWriter.(http.Flusher); ok {
+		f.Flush()
+	}
 }
 
 // WriteHeader writes the response line and headers to the client via the
@@ -29,6 +36,7 @@ func (w *TeeHeaderResponseWriter) WriteHeader(code int) {
 // TeeResponseWriter is an http.ResponseWriter that both writes and records the
 // response status, headers, and body for post-processing.
 type TeeResponseWriter struct {
+	http.Flusher
 	http.ResponseWriter
 	Body       bytes.Buffer
 	StatusCode int
@@ -39,6 +47,12 @@ type TeeResponseWriter struct {
 // status, headers, and body for post-processing.
 func NewTeeResponseWriter(w http.ResponseWriter) *TeeResponseWriter {
 	return &TeeResponseWriter{ResponseWriter: w}
+}
+
+func (w *TeeResponseWriter) Flush() {
+	if f, ok := w.ResponseWriter.(http.Flusher); ok {
+		f.Flush()
+	}
 }
 
 // Write writes the byte slice to the client via the underlying
