@@ -20,6 +20,8 @@ func NewTeeHeaderResponseWriter(w http.ResponseWriter) *TeeHeaderResponseWriter 
 	return &TeeHeaderResponseWriter{ResponseWriter: w}
 }
 
+// Flush implements the http.Flusher interface, if possible, to support streaming
+// responses to clients.
 func (w *TeeHeaderResponseWriter) Flush() {
 	if f, ok := w.ResponseWriter.(http.Flusher); ok {
 		f.Flush()
@@ -49,6 +51,8 @@ func NewTeeResponseWriter(w http.ResponseWriter) *TeeResponseWriter {
 	return &TeeResponseWriter{ResponseWriter: w}
 }
 
+// Flush implements the http.Flusher interface, if possible, to support streaming
+// responses to clients.
 func (w *TeeResponseWriter) Flush() {
 	if f, ok := w.ResponseWriter.(http.Flusher); ok {
 		f.Flush()
