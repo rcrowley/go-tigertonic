@@ -17,6 +17,21 @@ func TestCacheControl(t *testing.T) {
 	}
 }
 
+// If the wrapped handler sets the Cache-Control header, we should not set it.
+func TestCacheControlHandlerSetControl(t *testing.T) {
+	w := &testResponseWriter{}
+	r, _ := http.NewRequest("POST", "http://example.com/foo", nil)
+	testFunc := func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Cache-Control", "testing")
+	}
+	cached := Cached(http.HandlerFunc(testFunc), CacheOptions{MaxAge: time.Hour * 24 * 13, NoTransform: true})
+	cached.ServeHTTP(w, r)
+
+	if "testing" != w.Header().Get("Cache-Control") {
+		t.Fatalf("Cache-Control headers were %s, expected 'testing'", w.Header().Get("Cache-Control"))
+	}
+}
+
 var cacheOptions = []struct {
 	o CacheOptions
 	h string

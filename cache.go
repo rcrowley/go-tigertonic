@@ -27,8 +27,10 @@ func Cached(handler http.Handler, o CacheOptions) *CacheControl {
 // ServeHTTP sets the header and passes the request and response to the
 // wrapped http.Handler
 func (c *CacheControl) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Cache-Control", c.options.String())
 	c.handler.ServeHTTP(w, r)
+	if w.Header().Get("Cache-Control") == "" {
+		w.Header().Set("Cache-Control", c.options.String())
+	}
 }
 
 // These set the relevant headers in the response per
