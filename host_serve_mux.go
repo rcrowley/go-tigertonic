@@ -3,6 +3,7 @@ package tigertonic
 import (
 	"log"
 	"net/http"
+	"strings"
 )
 
 // HostServeMux is an HTTP request multiplexer that implements http.Handler
@@ -26,12 +27,24 @@ func (mux HostServeMux) HandleFunc(hostname string, handler func(http.ResponseWr
 	mux.Handle(hostname, http.HandlerFunc(handler))
 }
 
+// Given that we know that the port in the URL was correct, otherwise we
+// wouldn't be hitting the service, we can strip the port and use it to locate
+// the hostname in the hostname map.
+func stripPortFromHost(host string) string {
+	if colon := strings.LastIndex(host, ":"); colon >= 0 {
+		host = host[:colon]
+	}
+	return host
+}
+
 // Handler returns the handler to use for the given HTTP request.
 func (mux HostServeMux) Handler(r *http.Request) (http.Handler, string) {
-	if handler, ok := mux[r.Host]; ok {
+	host := stripPortFromHost(r.Host)
+	if handler, ok := mux[host]; ok {
 		return handler, r.Host
 	}
-	if handler, ok := mux[r.URL.Host]; ok {
+	host = stripPortFromHost(r.URL.Host)
+	if handler, ok := mux[host]; ok {
 		return handler, r.URL.Host
 	}
 	return NotFoundHandler{}, ""
