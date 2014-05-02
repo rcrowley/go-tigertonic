@@ -146,8 +146,15 @@ func (s *Server) tlsConfig() {
 }
 
 type closingResponseWriter struct {
+	http.Flusher
 	http.ResponseWriter
 	ch <-chan struct{}
+}
+
+func (w closingResponseWriter) Flush() {
+	if f, ok := w.ResponseWriter.(http.Flusher); ok {
+		f.Flush()
+	}
 }
 
 func (w closingResponseWriter) WriteHeader(code int) {
