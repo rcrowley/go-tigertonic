@@ -13,14 +13,14 @@ import (
 
 type configParser func(string, interface{}) error
 
-var configExt = make(map[string]configParser)
+var ConfigExt = make(map[string]configParser)
 
-func Register(ext string, f configParser) {
-	configExt[ext] = f
+func RegisterConfigExt(ext string, f configParser) {
+	ConfigExt[ext] = f
 }
 
 func init() {
-	Register(".json", ConfigureJSON)
+	RegisterConfigExt(".json", ConfigureJSON)
 }
 
 // Configure delegates reading and unmarshaling of the given configuration
@@ -34,7 +34,7 @@ func Configure(pathname string, i interface{}) error {
 	if "" == ext {
 		return errors.New("configuration file must have an extension")
 	}
-	f, ok := configExt[ext]
+	f, ok := ConfigExt[ext]
 	if !ok {
 		return fmt.Errorf(
 			"configuration file extension \"%s\" not recognized",
