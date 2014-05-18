@@ -21,16 +21,17 @@ func TestJSONLogger(t *testing.T) {
 	r.Header.Set("Accept", "application/json")
 	r.Header.Set("Content-Type", "application/json")
 
+	b := &bytes.Buffer{}
+	customLogger := log.New(b, "", 0)
+
 	logger := JSONLogged(Marshaled(func(u *url.URL, h http.Header, rq *testRequest) (int, http.Header, *testResponse, error) {
 		return http.StatusOK, nil, &testResponse{"bar"}, nil
-	}), nil)
+	}), nil, customLogger)
 
 	logger.RequestIDCreator = func(r *http.Request) RequestID {
 		return "request-id"
 	}
 
-	b := &bytes.Buffer{}
-	logger.logger = log.New(b, "", 0)
 	logger.ServeHTTP(w, r)
 
 	var m jsonLog
@@ -78,14 +79,15 @@ func TestJSONLoggerRedactor(t *testing.T) {
 	r, _ := http.NewRequest("GET", "http://example.com/foo", nil)
 	r.Header.Set("Accept", "application/json")
 
+	b := &bytes.Buffer{}
+	customLogger := log.New(b, "", 0)
+
 	logger := JSONLogged(Marshaled(func(u *url.URL, h http.Header, rq *testRequest) (int, http.Header, *testResponse, error) {
 		return http.StatusOK, nil, &testResponse{"SECRET"}, nil
 	}), func(s string) string {
 		return strings.Replace(s, "SECRET", "REDACTED", -1)
-	})
+	}, customLogger)
 
-	b := &bytes.Buffer{}
-	logger.logger = log.New(b, "", 0)
 	logger.ServeHTTP(w, r)
 	s := b.String()
 
