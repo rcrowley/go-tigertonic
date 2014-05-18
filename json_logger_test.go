@@ -36,7 +36,7 @@ func TestJSONLogger(t *testing.T) {
 
 	var m jsonLog
 
-	err := json.Unmarshal(b.Bytes()[6:], &m)
+	err := json.Unmarshal(b.Bytes(), &m)
 	if err != nil {
 		t.Fatal(err)
 	}
