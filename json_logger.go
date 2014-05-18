@@ -7,7 +7,6 @@ import (
 	"io"
 	"log"
 	"net/http"
-	"os"
 	"strings"
 	"time"
 )
@@ -25,9 +24,9 @@ type JSONLogger struct {
 // JSONLogged returns an http.Handler that logs requests and responses in a parse-able json line.
 // complete with paths, statuses, headers, and bodies.  Sensitive information may be
 // redacted by a user-defined function.
-func JSONLogged(handler http.Handler, redactor Redactor) *JSONLogger {
+func JSONLogged(handler http.Handler, redactor Redactor, logger *log.Logger) *JSONLogger {
 	return &JSONLogger{
-		logger:           log.New(os.Stdout, "", 0),
+		logger:           logger,
 		handler:          handler,
 		redactor:         redactor,
 		RequestIDCreator: requestIDCreator,
