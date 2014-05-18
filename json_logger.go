@@ -78,7 +78,7 @@ func (jl *JSONLogger) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if nil != jl.redactor {
 		s = jl.redactor(s)
 	}
-	jl.logger.Print("@json:", s)
+	jl.logger.Print(s)
 }
 
 func jsonLogHTTPHeader(h http.Header) map[string]string {
