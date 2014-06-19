@@ -82,7 +82,7 @@ func TestCORSOPTIONS(t *testing.T) {
 	}
 	t.Log(w.Header())
 	if "X-Pizza-Fax" != w.Header().Get(CORSAllowHeaders) {
-		t.Fatalf("Headers received missing pizza fax! %s", w.Header())
+		t.Fatalf("Received headers missing pizza fax! %s", w.Header())
 	}
 }
 
