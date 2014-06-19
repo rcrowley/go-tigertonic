@@ -36,7 +36,7 @@ func (self *CORSHandler) HandleCORS(w http.ResponseWriter, r *http.Request) {
 	if requestOrigin := r.Header.Get(CORSRequestOrigin); requestOrigin != "" {
 		w.Header().Set(CORSAllowOrigin, self.allowedOrigin(requestOrigin))
 	}
-	if requestMethods := r.Header.Get(CORSRequestHeaders); requestMethods != "" {
+	if requestHeaders := r.Header.Get(CORSRequestHeaders); requestHeaders != "" {
 		w.Header().Set(CORSAllowHeaders, self.allowedHeaders())
 	}
 }
@@ -59,7 +59,7 @@ func (self *CORSHandler) allowedHeaders() string {
 	return self.headers
 }
 
-// CRSBuilder facilitates the application of the same set of CORS rules to a
+// CORSBuilder facilitates the application of the same set of CORS rules to a
 // number of endpoints. One would use CORSBuilder.Build() the same way one
 // might wrap a handler in a call to Timed() or Logged().
 type CORSBuilder struct {
