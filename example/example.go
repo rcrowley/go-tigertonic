@@ -107,6 +107,15 @@ func init() {
 		}),
 	))
 
+	// Example use of a metrics.Registry's JSON output.
+	mux.Handle(
+		"GET",
+		"/metrics.json",
+		tigertonic.Marshaled(func(*url.URL, http.Header, interface{}) (int, http.Header, metrics.Registry, error) {
+			return http.StatusOK, nil, metrics.DefaultRegistry, nil
+		}),
+	)
+
 	// Example use of the version endpoint.
 	mux.Handle("GET", "/version", tigertonic.Version(Version))
 
