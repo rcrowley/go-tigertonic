@@ -12,7 +12,7 @@ Documentation
 
 - Day 13 of Go Advent 2013: <http://blog.gopheracademy.com/day-13-tiger-tonic>
 - Web Services in Go at GoSF 2014-01-15: video: <https://www.youtube.com/watch?v=D4CjdHllA-E>, slides: <http://rcrowley.org/talks/gosf-2014-01-15.html>
-- GopherCon 2014 Talk: <http://confreaks.com/videos/3442-gophercon2014-building-web-services-in-go>, slides: <http://rcrowley.org/talks/gophercon-2014.html#1>
+- GopherCon 2014 video: <http://confreaks.com/videos/3442-gophercon2014-building-web-services-in-go>, slides: <http://rcrowley.org/talks/gophercon-2014.html>
 
 ### Reference
 
