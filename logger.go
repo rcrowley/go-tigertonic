@@ -13,7 +13,7 @@ import (
 // ApacheLogger is an http.Handler that logs requests and responses in the
 // Apache combined log format.
 type ApacheLogger struct {
-	*log.Logger
+	Logger  Logging
 	handler http.Handler
 }
 
@@ -24,6 +24,18 @@ func ApacheLogged(handler http.Handler) *ApacheLogger {
 		Logger:  log.New(os.Stdout, "", 0),
 		handler: handler,
 	}
+}
+
+func (l *ApacheLogger) Print(v ...interface{}) {
+	l.Output(2, fmt.Sprint(v...))
+}
+
+func (l *ApacheLogger) Printf(format string, v ...interface{}) {
+	l.Output(2, fmt.Sprintf(format, v...))
+}
+
+func (l *ApacheLogger) Output(calldepth int, s string) error {
+	return l.Logger.Output(calldepth, s)
 }
 
 // ServeHTTP wraps the http.Request and http.ResponseWriter to log to standard
@@ -48,7 +60,7 @@ func (al *ApacheLogger) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		username = "-"
 	}
 	al.Printf(
-		"%s %s %s [%v] \"%s %s %s\" %d %d \"%s\" \"%s\"\n",
+		"%s %s %s [%v] \"%s %s %s\" %d %d \"%s\" \"%s\"",
 		remoteAddr,
 		"-", // We're not supporting identd, sorry.
 		username,
@@ -63,11 +75,17 @@ func (al *ApacheLogger) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	)
 }
 
+type Logging interface {
+	Output(calldepth int, s string) error
+	Print(v ...interface{})
+	Printf(format string, v ...interface{})
+}
+
 // Logger is an http.Handler that logs requests and responses, complete with
 // paths, statuses, headers, and bodies.  Sensitive information may be redacted
 // by a user-defined function.
 type Logger struct {
-	*log.Logger
+	Logger           Logging
 	handler          http.Handler
 	redactor         Redactor
 	RequestIDCreator RequestIDCreator
@@ -94,22 +112,21 @@ func (l *Logger) Output(calldepth int, s string) error {
 }
 
 // Print is identical to log.Logger's Print but uses our overridden Output.
-func (l *Logger) Print(v ...interface{}) { l.Output(2, fmt.Sprint(v...)) }
+func (l *Logger) Print(v ...interface{}) {
+	l.Output(2, fmt.Sprint(v...))
+}
 
 // Printf is identical to log.Logger's Print but uses our overridden Output.
 func (l *Logger) Printf(format string, v ...interface{}) {
 	l.Output(2, fmt.Sprintf(format, v...))
 }
 
-// Println is identical to log.Logger's Print but uses our overridden Output.
-func (l *Logger) Println(v ...interface{}) { l.Output(2, fmt.Sprintln(v...)) }
-
 // ServeHTTP wraps the http.Request and http.ResponseWriter to log to standard
 // output and pass through to the underlying http.Handler.
 func (l *Logger) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	requestID := l.RequestIDCreator(r)
 	l.Printf(
-		"%s > %s %s %s\n",
+		"%s > %s %s %s",
 		requestID,
 		r.Method,
 		r.URL.RequestURI(),
@@ -117,10 +134,10 @@ func (l *Logger) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	)
 	for key, values := range r.Header {
 		for _, value := range values {
-			l.Printf("%s > %s: %s\n", requestID, key, value)
+			l.Printf("%s > %s: %s", requestID, key, value)
 		}
 	}
-	l.Println(requestID, ">")
+	l.Print(requestID, " >")
 	r.Body = &readCloser{
 		ReadCloser: r.Body,
 		Logger:     l,
@@ -192,7 +209,7 @@ type readCloser struct {
 func (r *readCloser) Read(p []byte) (int, error) {
 	n, err := r.ReadCloser.Read(p)
 	if 0 < n && nil == err {
-		r.Println(r.requestID, ">", string(p[:n]))
+		r.Print(r.requestID, " > ", string(p[:n]))
 	}
 	return n, err
 }
@@ -216,18 +233,15 @@ func (w *loggerResponseWriter) Write(p []byte) (int, error) {
 	if !w.wroteHeader {
 		w.WriteHeader(http.StatusOK)
 	}
-	if '\n' == p[len(p)-1] {
-		w.Println(w.requestID, "<", string(p[:len(p)-1]))
-	} else {
-		w.Println(w.requestID, "<", string(p))
-	}
+
+	w.Print(w.requestID, " < ", string(p))
 	return w.ResponseWriter.Write(p)
 }
 
 func (w *loggerResponseWriter) WriteHeader(code int) {
 	w.wroteHeader = true
 	w.Printf(
-		"%s < %s %d %s\n",
+		"%s < %s %d %s",
 		w.requestID,
 		w.request.Proto,
 		code,
@@ -235,9 +249,9 @@ func (w *loggerResponseWriter) WriteHeader(code int) {
 	)
 	for name, values := range w.Header() {
 		for _, value := range values {
-			w.Printf("%s < %s: %s\n", w.requestID, name, value)
+			w.Printf("%s < %s: %s", w.requestID, name, value)
 		}
 	}
-	w.Println(w.requestID, "<")
+	w.Print(w.requestID, " <")
 	w.ResponseWriter.WriteHeader(code)
 }
