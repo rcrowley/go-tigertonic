@@ -216,7 +216,7 @@ func (w *loggerResponseWriter) Write(p []byte) (int, error) {
 	if !w.wroteHeader {
 		w.WriteHeader(http.StatusOK)
 	}
-	if '\n' == p[len(p)-1] {
+	if len(p) > 0 && '\n' == p[len(p)-1] {
 		w.Println(w.requestID, "<", string(p[:len(p)-1]))
 	} else {
 		w.Println(w.requestID, "<", string(p))
