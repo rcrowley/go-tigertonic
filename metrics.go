@@ -2,7 +2,7 @@ package tigertonic
 
 import (
 	"fmt"
-	"github.com/rcrowley/go-metrics"
+	"github.com/mvitorino/go-metrics"
 	"net/http"
 	"time"
 )
