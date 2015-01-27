@@ -107,7 +107,7 @@ func (m *Marshaler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		rq = nilRequest
 	}
 	if "PATCH" == r.Method || "POST" == r.Method || "PUT" == r.Method {
-		if rq == nilRequest && "0" != r.Header.Get("Content-Type") {
+		if rq == nilRequest && "0" != r.Header.Get("Content-Length") {
 			writeJSONError(w, NewMarshalerError(
 				"empty interface is not suitable for %s request bodies",
 				r.Method,
@@ -126,7 +126,7 @@ func (m *Marshaler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 		decoder := reflect.ValueOf(json.NewDecoder(r.Body))
 		out := decoder.MethodByName("Decode").Call([]reflect.Value{rq})
-		if !out[0].IsNil() && "0" != r.Header.Get("Content-Type") {
+		if !out[0].IsNil() && "0" != r.Header.Get("Content-Length") {
 			writeJSONError(w, NewHTTPEquivError(
 				out[0].Interface().(error),
 				http.StatusBadRequest,
