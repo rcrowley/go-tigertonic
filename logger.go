@@ -214,7 +214,7 @@ type multilineLoggerReadCloser struct {
 
 func (r *multilineLoggerReadCloser) Read(p []byte) (int, error) {
 	n, err := r.ReadCloser.Read(p)
-	if 0 < n && nil == err {
+	if 0 < n {
 		r.Println(r.requestID, ">", string(p[:n]))
 	}
 	return n, err
