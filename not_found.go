@@ -1,9 +1,8 @@
 package tigertonic
 
 import (
-	"encoding/json"
+	"errors"
 	"fmt"
-	"log"
 	"net/http"
 )
 
@@ -15,18 +14,8 @@ func (NotFoundHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if acceptJSON(r) {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusNotFound)
-		var e string
-		if SnakeCaseHTTPEquivErrors {
-			e = "not_found"
-		} else {
-			e = "tigertonic.NotFound"
-		}
-		if err := json.NewEncoder(w).Encode(map[string]string{
-			"description": description,
-			"error":       e,
-		}); nil != err {
-			log.Println(err)
-		}
+		err := NotFound{Err: errors.New(description)}
+		ResponseErrorWriter.WriteJSONError(w, err)
 	} else {
 		w.Header().Set("Content-Type", "text/plain")
 		w.WriteHeader(http.StatusNotFound)

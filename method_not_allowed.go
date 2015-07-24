@@ -2,6 +2,7 @@ package tigertonic
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -53,18 +54,8 @@ func (h MethodNotAllowedHandler) ServeHTTP(w http.ResponseWriter, r *http.Reques
 		if acceptJSON(r) {
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusMethodNotAllowed)
-			var e string
-			if SnakeCaseHTTPEquivErrors {
-				e = "method_not_allowed"
-			} else {
-				e = "tigertonic.MethodNotAllowed"
-			}
-			if err := json.NewEncoder(w).Encode(map[string]string{
-				"description": description,
-				"error":       e,
-			}); nil != err {
-				log.Println(err)
-			}
+			err := MethodNotAllowed{Err: errors.New(description)}
+			ResponseErrorWriter.WriteJSONError(w, err)
 		} else {
 			w.Header().Set("Content-Type", "text/plain")
 			w.WriteHeader(http.StatusMethodNotAllowed)

@@ -53,14 +53,6 @@ func errorStatusCode(err error) int {
 // ResponseErrorWriter is a handler for outputting errors to the http.ResponseWriter
 var ResponseErrorWriter ErrorWriter = defaultErrorWriter{}
 
-func writeJSONError(w http.ResponseWriter, err error) {
-	ResponseErrorWriter.WriteJSONError(w, err)
-}
-
-func writePlaintextError(w http.ResponseWriter, err error) {
-	ResponseErrorWriter.WritePlaintextError(w, err)
-}
-
 type ErrorWriter interface {
 	WriteJSONError(w http.ResponseWriter, err error)
 	WritePlaintextError(w http.ResponseWriter, err error)
@@ -72,9 +64,20 @@ type defaultErrorWriter struct {
 func (d defaultErrorWriter) WriteJSONError(w http.ResponseWriter, err error) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(errorStatusCode(err))
+
+	errName := errorName(err, "error")
+	if SnakeCaseHTTPEquivErrors {
+		switch errName {
+		case "tigertonic.NotFound":
+			errName = "not_found"
+		case "tigertonic.MethodNotAllowed":
+			errName = "method_not_allowed"
+		}
+	}
+
 	if jsonErr := json.NewEncoder(w).Encode(map[string]string{
 		"description": err.Error(),
-		"error":       errorName(err, "error"),
+		"error":       errName,
 	}); nil != jsonErr {
 		log.Printf("Error marshalling error response into JSON output: %s", jsonErr)
 	}
