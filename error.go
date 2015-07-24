@@ -51,31 +51,19 @@ func errorStatusCode(err error) int {
 }
 
 // ResponseErrorWriter is a handler for outputting errors to the http.ResponseWriter
-var ResponseErrorWriter ErrorWriter
+var ResponseErrorWriter ErrorWriter = DefaultErrorWriter{}
 
 func writeJSONError(w http.ResponseWriter, err error) {
-	if ResponseErrorWriter == nil {
-		ResponseErrorWriter = NewDefaultErrorWriter()
-	}
-
 	ResponseErrorWriter.WriteJSONError(w, err)
 }
 
 func writePlaintextError(w http.ResponseWriter, err error) {
-	if ResponseErrorWriter == nil {
-		ResponseErrorWriter = NewDefaultErrorWriter()
-	}
-
 	ResponseErrorWriter.WritePlaintextError(w, err)
 }
 
 type ErrorWriter interface {
 	WriteJSONError(w http.ResponseWriter, err error)
 	WritePlaintextError(w http.ResponseWriter, err error)
-}
-
-func NewDefaultErrorWriter() *DefaultErrorWriter {
-	return &DefaultErrorWriter{}
 }
 
 type DefaultErrorWriter struct {

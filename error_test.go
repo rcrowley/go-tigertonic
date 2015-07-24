@@ -77,7 +77,7 @@ func TestErrorWriter_DefaultWriter_CustomError(t *testing.T) {
 }
 
 func TestErrorWriter_TestWriter_StandardError(t *testing.T) {
-	ResponseErrorWriter = NewTestErrorWriter()
+	ResponseErrorWriter = TestErrorWriter{}
 
 	w := &testResponseWriter{}
 	r, _ := http.NewRequest("POST", "http://example.com/foo", bytes.NewBufferString("{ }"))
@@ -95,11 +95,11 @@ func TestErrorWriter_TestWriter_StandardError(t *testing.T) {
 	}
 
 	// Reset error writer after test...
-	ResponseErrorWriter = NewDefaultErrorWriter()
+	ResponseErrorWriter = DefaultErrorWriter{}
 }
 
 func TestErrorWriter_TestWriter_CustomError(t *testing.T) {
-	ResponseErrorWriter = NewTestErrorWriter()
+	ResponseErrorWriter = TestErrorWriter{}
 
 	w := &testResponseWriter{}
 	r, _ := http.NewRequest("POST", "http://example.com/foo", bytes.NewBufferString("{ }"))
@@ -118,7 +118,7 @@ func TestErrorWriter_TestWriter_CustomError(t *testing.T) {
 	}
 
 	// Reset error writer after test...
-	ResponseErrorWriter = NewDefaultErrorWriter()
+	ResponseErrorWriter = DefaultErrorWriter{}
 }
 
 // TestError is example error
