@@ -51,7 +51,7 @@ func errorStatusCode(err error) int {
 }
 
 // ResponseErrorWriter is a handler for outputting errors to the http.ResponseWriter
-var ResponseErrorWriter ErrorWriter = DefaultErrorWriter{}
+var ResponseErrorWriter ErrorWriter = defaultErrorWriter{}
 
 func writeJSONError(w http.ResponseWriter, err error) {
 	ResponseErrorWriter.WriteJSONError(w, err)
@@ -66,10 +66,10 @@ type ErrorWriter interface {
 	WritePlaintextError(w http.ResponseWriter, err error)
 }
 
-type DefaultErrorWriter struct {
+type defaultErrorWriter struct {
 }
 
-func (d DefaultErrorWriter) WriteJSONError(w http.ResponseWriter, err error) {
+func (d defaultErrorWriter) WriteJSONError(w http.ResponseWriter, err error) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(errorStatusCode(err))
 	if jsonErr := json.NewEncoder(w).Encode(map[string]string{
@@ -80,7 +80,7 @@ func (d DefaultErrorWriter) WriteJSONError(w http.ResponseWriter, err error) {
 	}
 }
 
-func (d DefaultErrorWriter) WritePlaintextError(w http.ResponseWriter, err error) {
+func (d defaultErrorWriter) WritePlaintextError(w http.ResponseWriter, err error) {
 	w.Header().Set("Content-Type", "text/plain")
 	w.WriteHeader(errorStatusCode(err))
 	fmt.Fprintf(w, "%s: %s", errorName(err, "error"), err)

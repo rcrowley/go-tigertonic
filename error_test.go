@@ -95,7 +95,7 @@ func TestErrorWriter_TestWriter_StandardError(t *testing.T) {
 	}
 
 	// Reset error writer after test...
-	ResponseErrorWriter = DefaultErrorWriter{}
+	ResponseErrorWriter = defaultErrorWriter{}
 }
 
 func TestErrorWriter_TestWriter_CustomError(t *testing.T) {
@@ -118,7 +118,7 @@ func TestErrorWriter_TestWriter_CustomError(t *testing.T) {
 	}
 
 	// Reset error writer after test...
-	ResponseErrorWriter = DefaultErrorWriter{}
+	ResponseErrorWriter = defaultErrorWriter{}
 }
 
 // TestError is example error
