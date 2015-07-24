@@ -143,10 +143,6 @@ func (e TestError) String() string {
 	return e.Error()
 }
 
-func NewTestErrorWriter() *TestErrorWriter {
-	return &TestErrorWriter{}
-}
-
 type TestErrorWriter struct {
 }
 
