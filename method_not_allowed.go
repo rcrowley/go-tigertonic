@@ -47,16 +47,14 @@ func (h MethodNotAllowedHandler) ServeHTTP(w http.ResponseWriter, r *http.Reques
 			fmt.Fprint(w, strings.Join(methods, ", "))
 		}
 	} else {
-		description := fmt.Sprintf(
+		methodNotAllowedErr := MethodNotAllowed{Err: errors.New(fmt.Sprintf(
 			"only %s are allowed",
 			strings.Join(methods, ", "),
-		)
+		))}
 		if acceptJSON(r) {
-			ResponseErrorWriter.WriteJSONError(w, MethodNotAllowed{Err: errors.New(description)})
+			ResponseErrorWriter.WriteJSONError(w, methodNotAllowedErr)
 		} else {
-			w.Header().Set("Content-Type", "text/plain")
-			w.WriteHeader(http.StatusMethodNotAllowed)
-			fmt.Fprint(w, description)
+			ResponseErrorWriter.WritePlaintextError(w, methodNotAllowedErr)
 		}
 	}
 }
