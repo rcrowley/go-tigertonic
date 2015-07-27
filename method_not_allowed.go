@@ -52,10 +52,7 @@ func (h MethodNotAllowedHandler) ServeHTTP(w http.ResponseWriter, r *http.Reques
 			strings.Join(methods, ", "),
 		)
 		if acceptJSON(r) {
-			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(http.StatusMethodNotAllowed)
-			err := MethodNotAllowed{Err: errors.New(description)}
-			ResponseErrorWriter.WriteJSONError(w, err)
+			ResponseErrorWriter.WriteJSONError(w, MethodNotAllowed{Err: errors.New(description)})
 		} else {
 			w.Header().Set("Content-Type", "text/plain")
 			w.WriteHeader(http.StatusMethodNotAllowed)
