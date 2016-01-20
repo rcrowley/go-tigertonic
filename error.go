@@ -16,7 +16,25 @@ func acceptJSON(r *http.Request) bool {
 	if "" == accept {
 		return true
 	}
-	return strings.Contains(accept, "*/*") || strings.Contains(accept, "application/json")
+	return strings.Contains(accept, "*/*") || strings.Contains(accept, "application/*") || strings.Contains(accept, "application/json")
+}
+
+func acceptContentType(r *http.Request, contentType string) bool {
+	accept := r.Header.Get("Accept")
+	if "" == accept {
+		return true
+	}
+	if strings.Contains(accept, "*/*") {
+		return true
+	}
+	if strings.Contains(accept, contentType) {
+		return true
+	}
+	typeParts := strings.Split(contentType, "/")
+	if len(typeParts) < 2 {
+		return false
+	}
+	return strings.Contains(accept, fmt.Sprintf("%s/*", typeParts[0]))
 }
 
 func errorName(err error, fallback string) string {
@@ -54,11 +72,20 @@ func errorStatusCode(err error) int {
 var ResponseErrorWriter ErrorWriter = defaultErrorWriter{}
 
 type ErrorWriter interface {
+	WriteError(r *http.Request, w http.ResponseWriter, err error)
 	WriteJSONError(w http.ResponseWriter, err error)
 	WritePlaintextError(w http.ResponseWriter, err error)
 }
 
 type defaultErrorWriter struct {
+}
+
+func (d defaultErrorWriter) WriteError(r *http.Request, w http.ResponseWriter, err error) {
+	if acceptJSON(r) {
+		d.WriteJSONError(w, err)
+	} else {
+		d.WritePlaintextError(w, err)
+	}
 }
 
 func (d defaultErrorWriter) WriteJSONError(w http.ResponseWriter, err error) {

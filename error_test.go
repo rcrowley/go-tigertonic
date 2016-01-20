@@ -11,6 +11,25 @@ import (
 	"testing"
 )
 
+var ttTestAcceptContentType = []struct {
+	r           *http.Request
+	contentType string
+	out         bool
+}{
+	{&http.Request{Header: http.Header{"Accept": []string{"text/plain; q=0.3, */*"}}}, "image/jpeg", true},
+	{&http.Request{Header: http.Header{"Accept": []string{"image/*; q=0.5, text/*"}}}, "text/plain", true},
+	{&http.Request{Header: http.Header{"Accept": []string{"image/jpeg, text/*"}}}, "image/jpeg", true},
+	{&http.Request{Header: http.Header{"Accept": []string{"image/*; q=0.5, text/*"}}}, "application/json", false},
+}
+
+func TestAcceptContentType(t *testing.T) {
+	for i, tt := range ttTestAcceptContentType {
+		if x := acceptContentType(tt.r, tt.contentType); x != tt.out {
+			t.Errorf("Test %d expected %t", i, tt.out)
+		}
+	}
+}
+
 func TestNamedHTTPEquivError(t *testing.T) {
 	var err error = OK{testNamedError("foo")}
 	if "foo" != errorName(err, "error") {
@@ -144,6 +163,14 @@ func (e TestError) String() string {
 }
 
 type TestErrorWriter struct {
+}
+
+func (d TestErrorWriter) WriteError(r *http.Request, w http.ResponseWriter, err error) {
+	if acceptJSON(r) {
+		d.WriteJSONError(w, err)
+	} else {
+		d.WritePlaintextError(w, err)
+	}
 }
 
 func (d TestErrorWriter) WriteJSONError(w http.ResponseWriter, err error) {
