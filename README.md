@@ -59,6 +59,10 @@ func myHandler(*url.URL, http.Header, *MyRequest) (int, http.Header, *MyResponse
 
 Alternatively, you can return a valid status as the first output parameter and an `error` as the last; that status will be used in the error response.
 
+If the return type of a `tigertonic.Marshaled` handler interface implements the `io.Reader` interface the stream will be written directly to the requestor. A `Content-Type` header is required to be specified in the response headers and the `Accept` header for these particular requests can be anything.
+
+Additionally, if the return type of the `tigertonic.Marshaled` handler implements the `io.Closer` interface the stream will be automatically closed after it is flushed to the requestor.
+
 ### `tigertonic.Logged`, `tigertonic.JSONLogged`, and `tigertonic.ApacheLogged`
 
 Wrap an `http.Handler` in `tigertonic.Logged` to have the request and response headers and bodies logged to standard output.  The second argument is an optional `func(string) string` called as requests and responses are logged to give the caller the opportunity to redact sensitive information from log entries.
