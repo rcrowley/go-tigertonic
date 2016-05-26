@@ -94,6 +94,7 @@ func CountedByStatus(
 		415: metrics.NewCounter(),
 		416: metrics.NewCounter(),
 		417: metrics.NewCounter(),
+		422: metrics.NewCounter(),
 		500: metrics.NewCounter(),
 		501: metrics.NewCounter(),
 		502: metrics.NewCounter(),
