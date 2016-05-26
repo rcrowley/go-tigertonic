@@ -120,7 +120,10 @@ func CountedByStatus(
 func (c *CounterByStatus) ServeHTTP(w0 http.ResponseWriter, r *http.Request) {
 	w := NewTeeHeaderResponseWriter(w0)
 	c.handler.ServeHTTP(w, r)
-	c.counters[w.StatusCode].Inc(1)
+	counter, ok := c.counters[w.StatusCode]
+	if ok {
+		counter.Inc(1)
+	}
 }
 
 // CounterByStatusXX is an http.Handler that counts responses by the first
