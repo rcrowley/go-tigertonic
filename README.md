@@ -3,7 +3,7 @@ Tiger Tonic
 
 [![Build Status](https://travis-ci.org/rcrowley/go-tigertonic.png?branch=master)](https://travis-ci.org/rcrowley/go-tigertonic)
 
-A Go framework for building JSON web services inspired by [Dropwizard](http://dropwizard.codahale.com).  If HTML is your game, this will hurt a little.
+A Go framework for building JSON web services inspired by [Dropwizard](http://www.dropwizard.io/).  If HTML is your game, this will hurt a little.
 
 Like the Go language itself, Tiger Tonic strives to keep features orthogonal.  It defers what it can to the Go standard library and a few other packages.
 
