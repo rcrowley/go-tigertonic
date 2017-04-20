@@ -147,7 +147,9 @@ func (s *Server) ListenAndServe() error {
 // ListenAndServeTLS calls s.TLS with the given certificate and private key
 // files and then calls s.ListenAndServe.
 func (s *Server) ListenAndServeTLS(cert, key string) error {
-	s.TLS(cert, key)
+	if err := s.TLS(cert, key); err != nil {
+		return err
+	}
 	return s.ListenAndServe()
 }
 
