@@ -255,6 +255,34 @@ func TestBody(t *testing.T) {
 	}
 }
 
+func TestHTTPMethod(t *testing.T) {
+	for _, tc := range []struct {
+		M string
+		D bool
+	}{
+		{M: "PUT", D: true},
+		{M: "PATCH", D: true},
+		{M: "DELETE", D: true},
+		{M: "POST", D: true},
+
+		{M: "OPTIONS", D: false},
+		{M: "GET", D: false},
+		{M: "HEAD", D: false},
+		{M: "TRACE", D: false},
+		{M: "CONNECT", D: false},
+	} {
+		r, _ := http.NewRequest(tc.M, "http://example.com/foo", bytes.NewBufferString("{\"foo\":\"bar\"}"))
+		r.Header.Set("Accept", "application/json")
+		r.Header.Set("Content-Type", "application/json")
+		Marshaled(func(u *url.URL, h http.Header, rq *testRequest) (int, http.Header, *testResponse, error) {
+			if tc.D && rq.Foo == "" {
+				t.Errorf("request unmarshaling failed for %s", tc.M)
+			}
+			return http.StatusOK, nil, &testResponse{"bar"}, nil
+		}).ServeHTTP(&testResponseWriter{}, r)
+	}
+}
+
 func TestEmptyBody(t *testing.T) {
 	w := &testResponseWriter{}
 	r, _ := http.NewRequest("GET", "http://example.com/foo", nil)

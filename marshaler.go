@@ -117,7 +117,7 @@ func (m *Marshaler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	} else {
 		rq = nilRequest
 	}
-	if "PATCH" == r.Method || "POST" == r.Method || "PUT" == r.Method {
+	if "PATCH" == r.Method || "POST" == r.Method || "PUT" == r.Method || ("DELETE" == r.Method && nilRequest != rq) {
 		if rq == nilRequest {
 			ResponseErrorWriter.WriteError(r, w, NewMarshalerError(
 				"empty interface is not suitable for %s request bodies",
