@@ -28,6 +28,16 @@ func (w *TeeHeaderResponseWriter) Flush() {
 	}
 }
 
+// Write writes the byte slice to the client via the underlying
+// http.ResponseWriter and records an implicit 200 status code if WriteHeader
+// has not yet been called, matching net/http's implicit WriteHeader behavior.
+func (w *TeeHeaderResponseWriter) Write(p []byte) (int, error) {
+	if 0 == w.StatusCode {
+		w.StatusCode = http.StatusOK
+	}
+	return w.ResponseWriter.Write(p)
+}
+
 // WriteHeader writes the response line and headers to the client via the
 // underlying http.ResponseWriter and records the status for post-processing.
 func (w *TeeHeaderResponseWriter) WriteHeader(code int) {
