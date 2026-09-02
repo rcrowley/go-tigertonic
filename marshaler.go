@@ -20,7 +20,7 @@ type Marshaler struct {
 // Marshaled returns an http.Handler that implements its ServeHTTP method by
 // calling the given function, the signature of which must be
 //
-//     func(*url.URL, http.Header, *Request) (int, http.Header, *Response)
+//	func(*url.URL, http.Header, *Request) (int, http.Header, *Response)
 //
 // where Request and Response may be any struct type of your choosing.
 func Marshaled(i interface{}) *Marshaler {

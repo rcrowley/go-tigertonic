@@ -9,7 +9,7 @@ import (
 // plain text.  The version string may be anything you like and may be set
 // at compile-time by adding
 //
-//     -ldflags "-X main.Version VERSION"
+//	-ldflags "-X main.Version VERSION"
 //
 // to your build command.
 type Version string

@@ -7,5 +7,5 @@
 //
 // [1] <https://github.com/rcrowley/go-tigertonic>
 // [2] <http://dropwizard.codahale.com>
-// [3] <https://github.com/rcrowley/go-metrics>
+// [3] <https://github.com/mattrobenolt/go-metrics>
 package tigertonic

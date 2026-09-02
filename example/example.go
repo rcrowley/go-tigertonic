@@ -14,8 +14,8 @@ import (
 	"strings"
 	"syscall"
 
-	"github.com/rcrowley/go-metrics"
 	"github.com/rcrowley/go-tigertonic"
+	"go.withmatt.com/metrics/promhttp"
 )
 
 var (
@@ -30,7 +30,7 @@ var (
 
 // A version string that can be set with
 //
-//     -ldflags "-X main.Version VERSION"
+//	-ldflags "-X main.Version VERSION"
 //
 // at compile-time.
 var Version string
@@ -56,21 +56,21 @@ func init() {
 	mux.Handle(
 		"POST",
 		"/stuff",
-		tigertonic.Timed(tigertonic.Marshaled(create), "POST-stuff", nil),
+		tigertonic.Timed(tigertonic.Marshaled(create), "POST_stuff", nil),
 	)
 	mux.Handle(
 		"GET",
 		"/stuff/{id}",
 		cors.Build(tigertonic.Timed(
 			tigertonic.Marshaled(get),
-			"GET-stuff-id",
+			"GET_stuff_id",
 			nil,
 		)),
 	)
 	mux.Handle(
 		"POST",
 		"/stuff/{id}",
-		tigertonic.Timed(tigertonic.Marshaled(update), "POST-stuff-id", nil),
+		tigertonic.Timed(tigertonic.Marshaled(update), "POST_stuff_id", nil),
 	)
 
 	// Example use of the If middleware to forbid access to certain endpoints
@@ -107,14 +107,8 @@ func init() {
 		}),
 	))
 
-	// Example use of a metrics.Registry's JSON output.
-	mux.Handle(
-		"GET",
-		"/metrics.json",
-		tigertonic.Marshaled(func(*url.URL, http.Header, interface{}) (int, http.Header, metrics.Registry, error) {
-			return http.StatusOK, nil, metrics.DefaultRegistry, nil
-		}),
-	)
+	// Example use of the Prometheus metrics output.
+	mux.Handle("GET", "/metrics", promhttp.Handler())
 
 	// Example use of the version endpoint.
 	mux.Handle("GET", "/version", tigertonic.Version(Version))
@@ -137,13 +131,6 @@ func init() {
 
 func main() {
 	flag.Parse()
-
-	// Example use of go-metrics.
-	go metrics.Log(
-		metrics.DefaultRegistry,
-		60e9,
-		log.New(os.Stderr, "metrics ", log.Lmicroseconds),
-	)
 
 	// Example of parsing a configuration file.
 	c := &Config{}
