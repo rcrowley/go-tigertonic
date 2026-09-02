@@ -1,2 +1,4 @@
-github.com/rcrowley/go-metrics v0.0.0-20250401214520-65e299d6c5c9 h1:bsUq1dX0N8AOIL7EB/X911+m4EHsnWEHeJ0c+3TTBrg=
-github.com/rcrowley/go-metrics v0.0.0-20250401214520-65e299d6c5c9/go.mod h1:bCqnVzQkZxMG4s8nGwiZ5l3QUCyqpo9Y+/ZMZ9VjZe4=
+go.withmatt.com/metrics v0.6.0 h1:KbaV069e38ife9VnZXAn/YLjt0AgTD2HalJqPzdv4CU=
+go.withmatt.com/metrics v0.6.0/go.mod h1:UcQWoQtd/XaG8G0uG7EdASihWoQ4boXBbzge7XrhXIM=
+golang.org/x/sys v0.31.0 h1:ioabZlmFYtWhL+TRYpcnNlLwhyxaM9kWTDEmfnprqik=
+golang.org/x/sys v0.31.0/go.mod h1:BJP2sWEmIv4KK5OTEluFJCKSidICx8ciO85XgH3Ak8k=
