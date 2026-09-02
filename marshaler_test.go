@@ -418,7 +418,7 @@ func TestStreamResponseReader(t *testing.T) {
 }
 
 type testReader struct {
-	ID        string `json:id`
+	ID        string `json:"id"`
 	Buffer    *bytes.Buffer
 	WasRead   bool
 	WasClosed bool

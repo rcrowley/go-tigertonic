@@ -30,7 +30,7 @@ var (
 
 // A version string that can be set with
 //
-//     -ldflags "-X main.Version VERSION"
+//	-ldflags "-X main.Version VERSION"
 //
 // at compile-time.
 var Version string
@@ -78,7 +78,7 @@ func init() {
 	// this example).
 	mux.Handle("GET", "/forbidden", cors.Build(tigertonic.If(
 		func(*http.Request) (http.Header, error) {
-			return nil, tigertonic.Forbidden{errors.New("forbidden")}
+			return nil, tigertonic.Forbidden{Err: errors.New("forbidden")}
 		},
 		tigertonic.Marshaled(func(*url.URL, http.Header, interface{}) (int, http.Header, interface{}, error) {
 			return http.StatusOK, nil, &MyResponse{}, nil
@@ -188,7 +188,7 @@ func main() {
 			log.Println(err)
 		}
 	}()
-	ch := make(chan os.Signal)
+	ch := make(chan os.Signal, 1)
 	signal.Notify(ch, syscall.SIGINT, syscall.SIGQUIT, syscall.SIGTERM)
 	log.Println(<-ch)
 	server.Close()

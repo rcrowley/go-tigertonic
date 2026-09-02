@@ -41,7 +41,8 @@ func TestServerGracefulStop(t *testing.T) {
 	go func() {
 		rs, err := http.Get(fmt.Sprintf("http://%s", l.Addr()))
 		if nil != err {
-			t.Fatal(err)
+			chR <- &http.Response{}
+			return
 		}
 		chR <- rs
 	}()

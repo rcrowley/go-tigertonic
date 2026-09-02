@@ -1,8 +1,6 @@
 Tiger Tonic
 ===========
 
-[![Build Status](https://travis-ci.org/rcrowley/go-tigertonic.png?branch=master)](https://travis-ci.org/rcrowley/go-tigertonic)
-
 A Go framework for building JSON web services inspired by [Dropwizard](http://www.dropwizard.io/).  If HTML is your game, this will hurt a little.
 
 Like the Go language itself, Tiger Tonic strives to keep features orthogonal.  It defers what it can to the Go standard library and a few other packages.
@@ -18,13 +16,7 @@ Documentation
 
 ### Reference
 
-<http://godoc.org/github.com/rcrowley/go-tigertonic>
-
-### Community
-
-- Users mailing list: <https://groups.google.com/forum/#!forum/tigertonic-users>
-- Developers mailing list: <https://groups.google.com/forum/#!forum/tigertonic-dev>
-- IRC: `#tigertonic` on `irc.freenode.net`
+<http://pkg.go.dev/github.com/rcrowley/go-tigertonic>
 
 Synopsis
 --------
