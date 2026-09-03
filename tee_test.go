@@ -21,6 +21,20 @@ func TestTeeHeaderResponseWriter(t *testing.T) {
 	}
 }
 
+func TestTeeHeaderResponseWriterImplicitWriteHeader(t *testing.T) {
+	w0 := &testResponseWriter{}
+	w := NewTeeHeaderResponseWriter(w0)
+	if _, err := w.Write([]byte("hello")); nil != err {
+		t.Fatal(err)
+	}
+	if http.StatusOK != w.StatusCode {
+		t.Fatal(w.StatusCode)
+	}
+	if "hello" != w0.Body.String() {
+		t.Fatal(w0.Body.String())
+	}
+}
+
 func TestTeeResponseWriter(t *testing.T) {
 	w0 := &testResponseWriter{}
 	w := NewTeeResponseWriter(w0)
